@@ -135,20 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Engine_Pipeline.cpp" />
-    <ClCompile Include="Engine_Window.cpp" />
-    <ClCompile Include="EngineApp.cpp" />
     <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Engine_Pipeline.h" />
-    <ClInclude Include="Engine_Window.h" />
-    <ClInclude Include="EngineApp.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="compile_shaders.bat" />
-    <None Include="shaders\simple_shader.frag" />
-    <None Include="shaders\simple_shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

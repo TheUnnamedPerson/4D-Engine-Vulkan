@@ -1,31 +1,4 @@
-
-#include "EngineApp.h"
-
-#include <iostream>
-#include <stdexcept>
-#include <cstdlib>
-
-int main()
-{
-	Engine::EngineApp app;
-
-    try
-    {
-		app.run();
-	}
-    catch (const std::exception& e)
-    {
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
-}
-
-
-
-
-/*#define GLFW_INCLUDE_VULKAN
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #define GLM_FORCE_RADIANS
@@ -59,4 +32,4 @@ int main() {
     glfwTerminate();
 
     return 0;
-}*/
+}
