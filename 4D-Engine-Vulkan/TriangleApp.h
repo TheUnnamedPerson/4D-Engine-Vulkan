@@ -2,6 +2,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <iostream>
 #include <stdexcept>
@@ -10,20 +11,49 @@
 #include <cstring>
 #include <optional>
 #include <fstream>
+#include <array>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
-const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const int MAX_FPS = 60;
 
+struct Vertex {
+    glm::vec2 pos;
+    glm::vec3 color;
 
-const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation",
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        return bindingDescription;
+    }
+
+    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex, pos);
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex, color);
+        return attributeDescriptions;
+    }
 };
 
-const std::vector<const char*> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+const std::vector<Vertex> vertices = {
+    {{-0.5f, -0.5f}, {0.1f, 0.1f, 0.5f}},
+    {{0.5f, -0.5f}, {0.2f, 0.5f, 0.7f}},
+    {{0.5f, 0.5f}, {0.3f, 0.7f, 1.0f}},
+    {{-0.5f, 0.5f}, {0.05f, 0.25f, 7.0f}}
+};
+
+const std::vector<uint16_t> indices = {
+    0, 1, 2, 2, 3, 0
 };
 
 
@@ -101,6 +131,23 @@ class TriangleApp
         double lastUpdatedTime = 0.0;
         double lastFrameTime = 0.0;
 
+        VkBuffer vertexBuffer;
+        VkDeviceMemory vertexBufferMemory;
+        VkBuffer indexBuffer;
+        VkDeviceMemory indexBufferMemory;
+
+        const int MAX_FRAMES_IN_FLIGHT = 2;
+
+uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+const std::vector<const char*> validationLayers = {
+    "VK_LAYER_KHRONOS_validation",
+};
+
+const std::vector<const char*> deviceExtensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
         bool checkValidationLayerSupport();
 
         void createInstance();
@@ -130,9 +177,17 @@ class TriangleApp
             createGraphicsPipeline();
             createFramebuffers();
             createCommandPool();
+            createVertexBuffer();
+            createIndexBuffer();
             createCommandBuffers();
             createSyncObjects();
         }
+
+        void createIndexBuffer();
+
+        void createVertexBuffer();
+        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+        void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
         void recreateSwapChain() {
             int width = 0, height = 0;
