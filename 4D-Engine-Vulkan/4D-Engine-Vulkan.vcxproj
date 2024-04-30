@@ -142,8 +142,11 @@
     <ClInclude Include="TriangleApp.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Compile_Shaders.bat" />
     <None Include="shaders\simple_shader.frag" />
+    <None Include="shaders\simple_shader.frag.spv" />
     <None Include="shaders\simple_shader.vert" />
+    <None Include="shaders\simple_shader.vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

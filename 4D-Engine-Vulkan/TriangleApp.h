@@ -9,9 +9,14 @@
 #include <vector>
 #include <cstring>
 #include <optional>
+#include <fstream>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
+const int MAX_FPS = 60;
+
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation",
@@ -72,8 +77,29 @@ class TriangleApp
 
         std::vector<VkImageView> swapChainImageViews;
 
+        VkRenderPass renderPass;
+        VkPipelineLayout pipelineLayout;
+
+        VkPipeline graphicsPipeline;
+
+        std::vector<VkFramebuffer> swapChainFramebuffers;
+
+        VkCommandPool commandPool;
+        std::vector<VkCommandBuffer> commandBuffers;
+
         VkQueue graphicsQueue;
         VkQueue presentQueue;
+
+        std::vector<VkSemaphore> imageAvailableSemaphores;
+        std::vector<VkSemaphore> renderFinishedSemaphores;
+        std::vector<VkFence> inFlightFences;
+
+        bool framebufferResized = false;
+
+        uint32_t currentFrame = 0;
+
+        double lastUpdatedTime = 0.0;
+        double lastFrameTime = 0.0;
 
         bool checkValidationLayerSupport();
 
@@ -83,10 +109,14 @@ class TriangleApp
             glfwInit();
 
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+			//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 			window = glfwCreateWindow(WIDTH, HEIGHT, "Triangle App", nullptr, nullptr);
+            glfwSetWindowUserPointer(window, this);
+            glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         }
+
+        static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
         void initVulkan() {
             createInstance();
@@ -96,10 +126,48 @@ class TriangleApp
             createLogicalDevice();
             createSwapChain();
             createImageViews();
+            createRenderPass();
             createGraphicsPipeline();
+            createFramebuffers();
+            createCommandPool();
+            createCommandBuffers();
+            createSyncObjects();
         }
 
+        void recreateSwapChain() {
+            int width = 0, height = 0;
+            glfwGetFramebufferSize(window, &width, &height);
+            while (width == 0 || height == 0) {
+                if (glfwWindowShouldClose(window))
+                    return;
+                glfwGetFramebufferSize(window, &width, &height);
+                glfwWaitEvents();
+            }
+
+            vkDeviceWaitIdle(device);
+
+            cleanupSwapChain();
+
+            createSwapChain();
+            createImageViews();
+            createFramebuffers();
+        }
+
+        void createSyncObjects();
+
+        void createCommandBuffers();
+
+        void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
+        void createCommandPool();
+
+        void createFramebuffers();
+
+        void createRenderPass();
+
         void createGraphicsPipeline();
+
+        VkShaderModule createShaderModule(const std::vector<char>& code);
 
         void createImageViews();
 
@@ -125,11 +193,27 @@ class TriangleApp
 
         void mainLoop() {
             while (!glfwWindowShouldClose(window)) {
+                double currentTime = glfwGetTime();
+                double deltaTime = currentTime - lastUpdatedTime;
+
                 glfwPollEvents();
+
+                if (currentTime - lastFrameTime >= 1.0 / MAX_FPS) {
+                    drawFrame();
+					lastFrameTime = currentTime;					
+				}
+
+                lastUpdatedTime = currentTime;
             }
+
+            vkQueueWaitIdle(presentQueue);
         }
 
+        void drawFrame();
+
         void cleanup();
+
+        void cleanupSwapChain();
 
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
@@ -166,6 +250,8 @@ class TriangleApp
             createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
             createInfo.pfnUserCallback = debugCallback;
         }
+
+        static std::vector<char> readFile(const std::string& filename);
 
 };
 
