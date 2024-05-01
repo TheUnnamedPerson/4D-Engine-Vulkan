@@ -1,4 +1,9 @@
+#define STB_IMAGE_IMPLEMENTATION
+
 #include "TriangleApp.h"
+
+
+
 
 int main() {
     TriangleApp app;

@@ -2,7 +2,17 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+
+#include <stb_image.h>
+
+#include "3D_Objects.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -12,48 +22,50 @@
 #include <optional>
 #include <fstream>
 #include <array>
+#include <chrono>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
 const int MAX_FPS = 60;
 
-struct Vertex {
-    glm::vec2 pos;
-    glm::vec3 color;
 
-    static VkVertexInputBindingDescription getBindingDescription() {
-        VkVertexInputBindingDescription bindingDescription{};
-        bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(Vertex);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-        return bindingDescription;
-    }
-
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-        attributeDescriptions[0].binding = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(Vertex, pos);
-        attributeDescriptions[1].binding = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, color);
-        return attributeDescriptions;
-    }
-};
 
 const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f}, {0.1f, 0.1f, 0.5f}},
-    {{0.5f, -0.5f}, {0.2f, 0.5f, 0.7f}},
-    {{0.5f, 0.5f}, {0.3f, 0.7f, 1.0f}},
-    {{-0.5f, 0.5f}, {0.05f, 0.25f, 7.0f}}
+    {{-0.5f, -0.5f, -0.5f}, {0.1f, 0.1f, 0.5f}, {1.0f, 0.0f}}, //0
+    {{0.5f, -0.5f, -0.5f}, {0.2f, 0.5f, 0.7f}, {0.0f, 0.0f}}, //1
+    {{0.5f, 0.5f, -0.5f}, {0.3f, 0.7f, 1.0f}, {0.0f, 1.0f}}, //2
+    {{-0.5f, 0.5f, -0.5f}, {0.05f, 0.25f, 0.7f}, {1.0f, 1.0f}}, //3
+
+    {{-0.5f, -0.5f, 0.5f}, {0.1f, 0.1f, 0.5f}, {1.0f, 0.0f}}, //4
+    {{0.5f, -0.5f, 0.5f}, {0.2f, 0.5f, 0.7f}, {0.0f, 0.0f}}, //5
+    {{0.5f, 0.5f, 0.5f}, {0.3f, 0.7f, 1.0f}, {0.0f, 1.0f}}, //6
+    {{-0.5f, 0.5f, 0.5f}, {0.05f, 0.25f, 0.7f}, {1.0f, 1.0f}}, //7
 };
 
+std::vector<Vertex> generateVertices(std::optional<Vertex> a, std::optional<Vertex> b, std::optional<Vertex> c, int n);
+
+std::vector<uint16_t> generateIndeces(int n);
+
 const std::vector<uint16_t> indices = {
-    0, 1, 2, 2, 3, 0
+    0, 1, 2,
+    2, 3, 0,
+    //2, 4, 3
+
+    6, 5, 4,
+    4, 7, 6,
+
+    0, 4, 5,
+    5, 1, 0,
+
+    1, 5, 6,
+    6, 2, 1,
+
+    2, 6, 7,
+    7, 3, 2,
+
+    3, 7, 4,
+    4, 0, 3
 };
 
 
@@ -63,7 +75,11 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-
+struct UniformBufferObject {
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
@@ -84,7 +100,12 @@ struct SwapChainSupportDetails {
 class TriangleApp
 {
     public:
+        //std::vector<Vertex> vertices;
+        //std::vector<uint16_t> indices;
+
         void run() {
+            //vertices = generateVertices(std::nullopt, std::nullopt, std::nullopt, 1);
+            //indices = generateIndeces(1);
             initWindow();
             initVulkan();
             mainLoop();
@@ -108,7 +129,6 @@ class TriangleApp
         std::vector<VkImageView> swapChainImageViews;
 
         VkRenderPass renderPass;
-        VkPipelineLayout pipelineLayout;
 
         VkPipeline graphicsPipeline;
 
@@ -119,6 +139,9 @@ class TriangleApp
 
         VkQueue graphicsQueue;
         VkQueue presentQueue;
+
+        VkDescriptorSetLayout descriptorSetLayout;
+        VkPipelineLayout pipelineLayout;
 
         std::vector<VkSemaphore> imageAvailableSemaphores;
         std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -135,6 +158,26 @@ class TriangleApp
         VkDeviceMemory vertexBufferMemory;
         VkBuffer indexBuffer;
         VkDeviceMemory indexBufferMemory;
+
+        std::vector<VkBuffer> uniformBuffers;
+        std::vector<VkDeviceMemory> uniformBuffersMemory;
+        std::vector<void*> uniformBuffersMapped;
+
+        VkDescriptorPool descriptorPool;
+        std::vector<VkDescriptorSet> descriptorSets;
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+
+        VkImage textureImage;
+        VkDeviceMemory textureImageMemory;
+
+        VkImageView textureImageView;
+        VkSampler textureSampler;
+
+        VkImage depthImage;
+        VkDeviceMemory depthImageMemory;
+        VkImageView depthImageView;
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -158,7 +201,7 @@ const std::vector<const char*> deviceExtensions = {
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-			window = glfwCreateWindow(WIDTH, HEIGHT, "Triangle App", nullptr, nullptr);
+			window = glfwCreateWindow(WIDTH, HEIGHT, "Test Window", nullptr, nullptr);
             glfwSetWindowUserPointer(window, this);
             glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
         }
@@ -174,14 +217,50 @@ const std::vector<const char*> deviceExtensions = {
             createSwapChain();
             createImageViews();
             createRenderPass();
+            createDescriptorSetLayout();
             createGraphicsPipeline();
             createFramebuffers();
             createCommandPool();
+            createTextureImage();
+            createTextureImageView();
+            createTextureSampler();
+            createDepthResources();
             createVertexBuffer();
             createIndexBuffer();
+            createUniformBuffers();
+            createDescriptorPool();
+            createDescriptorSets();
             createCommandBuffers();
             createSyncObjects();
         }
+
+        void createDepthResources();
+
+        VkFormat findDepthFormat();
+        VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        bool hasStencilComponent(VkFormat format) {
+            return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+        }
+
+        void createTextureImageView();
+        VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+        void createTextureSampler();
+
+        void createTextureImage();
+        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+        VkCommandBuffer beginSingleTimeCommands();
+        void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+        void createDescriptorPool();
+        void createDescriptorSets();
+
+        void createUniformBuffers();
+        void updateUniformBuffer(uint32_t currentImage);
+
+        void createDescriptorSetLayout();
 
         void createIndexBuffer();
 
