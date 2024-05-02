@@ -31,41 +31,141 @@ const int MAX_FPS = 60;
 
 
 
-const std::vector<Vertex> vertices = {
+/*const std::vector<Vertex> vertices = {
+    //Front Side
     {{-0.5f, -0.5f, -0.5f}, {0.1f, 0.1f, 0.5f}, {1.0f, 0.0f}}, //0
     {{0.5f, -0.5f, -0.5f}, {0.2f, 0.5f, 0.7f}, {0.0f, 0.0f}}, //1
     {{0.5f, 0.5f, -0.5f}, {0.3f, 0.7f, 1.0f}, {0.0f, 1.0f}}, //2
     {{-0.5f, 0.5f, -0.5f}, {0.05f, 0.25f, 0.7f}, {1.0f, 1.0f}}, //3
 
-    {{-0.5f, -0.5f, 0.5f}, {0.1f, 0.1f, 0.5f}, {1.0f, 0.0f}}, //4
-    {{0.5f, -0.5f, 0.5f}, {0.2f, 0.5f, 0.7f}, {0.0f, 0.0f}}, //5
-    {{0.5f, 0.5f, 0.5f}, {0.3f, 0.7f, 1.0f}, {0.0f, 1.0f}}, //6
-    {{-0.5f, 0.5f, 0.5f}, {0.05f, 0.25f, 0.7f}, {1.0f, 1.0f}}, //7
+    //Back Side
+    {{-0.5f, -0.5f, 0.5f}, {0.1f, 0.1f, 0.5f}, {0.0f, 0.0f}}, //4
+    {{0.5f, -0.5f, 0.5f}, {0.2f, 0.5f, 0.7f}, {1.0f, 0.0f}}, //5
+    {{0.5f, 0.5f, 0.5f}, {0.3f, 0.7f, 1.0f}, {1.0f, 1.0f}}, //6
+    {{-0.5f, 0.5f, 0.5f}, {0.05f, 0.25f, 0.7f}, {0.0f, 1.0f}}, //7
+};*/
+
+//Sides Have Unique Vertices Due to Texture Mapping
+const std::vector<glm::vec2> texCoords1 = {
+	{0.5f, 0.0f},
+	{0.0f, 0.0f},
+	{0.0f, 1.0f},
+	{0.5f, 1.0f}
+};
+
+const std::vector<glm::vec2> texCoords2 = {
+    {1.0f, 0.0f},
+    {0.5f, 0.0f},
+    {0.5f, 1.0f},
+    {1.0f, 1.0f}
+};
+
+const std::vector<Vertex> cubeVertices = {
+    //Front Side
+	{{0.0f, 0.0f, 1.0f}, {0.1f, 0.1f, 0.5f}, texCoords1[0]}, //0
+	{{1.0f, 0.0f, 1.0f}, {0.2f, 0.5f, 0.7f}, texCoords1[1]}, //1
+	{{1.0f, 1.0f, 1.0f}, {0.3f, 0.7f, 1.0f}, texCoords1[2]}, //2
+    {{0.0f, 1.0f, 1.0f}, {0.5f, 0.2f, 0.7f}, texCoords1[3]}, //3
+
+    //Back Side
+    {{1.0f, 0.0f, 0.0f}, {0.2f, 0.5f, 0.7f}, texCoords1[0]}, //4
+    {{0.0f, 0.0f, 0.0f}, {0.1f, 0.1f, 0.5f}, texCoords1[1]}, //5
+    {{0.0f, 1.0f, 0.0f}, {0.5f, 0.2f, 0.7f}, texCoords1[2]}, //6
+    {{1.0f, 1.0f, 0.0f}, {0.3f, 0.7f, 1.0f}, texCoords1[3]}, //7
+
+    //Left Side
+    {{0.0f, 0.0f, 0.0f}, {0.2f, 0.5f, 0.7f}, texCoords1[0]}, //8
+    {{0.0f, 0.0f, 1.0f}, {0.1f, 0.1f, 0.5f}, texCoords1[1]}, //9
+    {{0.0f, 1.0f, 1.0f}, {0.5f, 0.2f, 0.7f}, texCoords1[2]}, //10
+    {{0.0f, 1.0f, 0.0f}, {0.3f, 0.7f, 1.0f}, texCoords1[3]}, //11
+
+    //Right Side
+    {{1.0f, 0.0f, 1.0f}, {0.3f, 0.7f, 1.0f}, texCoords1[0]}, //12
+    {{1.0f, 0.0f, 0.0f}, {0.5f, 0.2f, 0.7f}, texCoords1[1]}, //13
+    {{1.0f, 1.0f, 0.0f}, {0.1f, 0.1f, 0.5f}, texCoords1[2]}, //14
+    {{1.0f, 1.0f, 1.0f}, {0.2f, 0.5f, 0.7f}, texCoords1[3]}, //15
+
+    //Top Side
+    {{0.0f, 0.0f, 0.0f}, {0.5f, 0.2f, 0.7f}, texCoords1[3]}, //16
+    {{1.0f, 0.0f, 0.0f}, {0.3f, 0.7f, 1.0f}, texCoords1[2]}, //17
+    {{1.0f, 0.0f, 1.0f}, {0.2f, 0.5f, 0.7f}, texCoords1[1]}, //18
+    {{0.0f, 0.0f, 1.0f}, {0.1f, 0.1f, 0.5f}, texCoords1[0]}, //19
+
+    //Bottom Side
+    {{0.0f, 1.0f, 1.0f}, {0.1f, 0.1f, 0.5f}, texCoords1[3]}, //20
+    {{1.0f, 1.0f, 1.0f}, {0.2f, 0.5f, 0.7f}, texCoords1[2]}, //21
+    {{1.0f, 1.0f, 0.0f}, {0.3f, 0.7f, 1.0f}, texCoords1[1]}, //22
+    {{0.0f, 1.0f, 0.0f}, {0.5f, 0.2f, 0.7f}, texCoords1[0]}, //23
+    
+};
+
+const std::vector<Vertex> cube2Vertices = {
+    //Front Side
+    {{0.0f, 0.0f, 1.0f}, {0.1f, 0.1f, 0.5f}, texCoords2[0]}, //0
+    {{1.0f, 0.0f, 1.0f}, {0.2f, 0.5f, 0.7f}, texCoords2[1]}, //1
+    {{1.0f, 1.0f, 1.0f}, {0.3f, 0.7f, 1.0f}, texCoords2[2]}, //2
+    {{0.0f, 1.0f, 1.0f}, {0.5f, 0.5f, 0.7f}, texCoords2[3]}, //3
+
+    //Back Side
+    {{1.0f, 0.0f, 0.0f}, {0.2f, 0.5f, 0.7f}, texCoords2[0]}, //4
+    {{0.0f, 0.0f, 0.0f}, {0.1f, 0.1f, 0.5f}, texCoords2[1]}, //5
+    {{0.0f, 1.0f, 0.0f}, {0.5f, 0.2f, 0.7f}, texCoords2[2]}, //6
+    {{1.0f, 1.0f, 0.0f}, {0.3f, 0.7f, 1.0f}, texCoords2[3]}, //7
+
+    //Left Side
+    {{0.0f, 0.0f, 0.0f}, {0.2f, 0.5f, 0.7f}, texCoords2[0]}, //8
+    {{0.0f, 0.0f, 1.0f}, {0.1f, 0.1f, 0.5f}, texCoords2[1]}, //9
+    {{0.0f, 1.0f, 1.0f}, {0.5f, 0.2f, 0.7f}, texCoords2[2]}, //10
+    {{0.0f, 1.0f, 0.0f}, {0.3f, 0.7f, 1.0f}, texCoords2[3]}, //11
+
+    //Right Side
+    {{1.0f, 0.0f, 1.0f}, {0.3f, 0.7f, 1.0f}, texCoords2[0]}, //12
+    {{1.0f, 0.0f, 0.0f}, {0.5f, 0.2f, 0.7f}, texCoords2[1]}, //13
+    {{1.0f, 1.0f, 0.0f}, {0.1f, 0.1f, 0.5f}, texCoords2[2]}, //14
+    {{1.0f, 1.0f, 1.0f}, {0.2f, 0.5f, 0.7f}, texCoords2[3]}, //15
+
+    //Top Side
+    {{0.0f, 0.0f, 0.0f}, {0.5f, 0.2f, 0.7f}, texCoords2[3]}, //16
+    {{1.0f, 0.0f, 0.0f}, {0.3f, 0.7f, 1.0f}, texCoords2[2]}, //17
+    {{1.0f, 0.0f, 1.0f}, {0.2f, 0.5f, 0.7f}, texCoords2[1]}, //18
+    {{0.0f, 0.0f, 1.0f}, {0.1f, 0.1f, 0.5f}, texCoords2[0]}, //19
+
+    //Bottom Side
+    {{0.0f, 1.0f, 1.0f}, {0.1f, 0.1f, 0.5f}, texCoords2[3]}, //20
+    {{1.0f, 1.0f, 1.0f}, {0.2f, 0.5f, 0.7f}, texCoords2[2]}, //21
+    {{1.0f, 1.0f, 0.0f}, {0.3f, 0.7f, 1.0f}, texCoords2[1]}, //22
+    {{0.0f, 1.0f, 0.0f}, {0.5f, 0.2f, 0.7f}, texCoords2[0]}, //23
+
 };
 
 std::vector<Vertex> generateVertices(std::optional<Vertex> a, std::optional<Vertex> b, std::optional<Vertex> c, int n);
 
 std::vector<uint16_t> generateIndeces(int n);
 
-const std::vector<uint16_t> indices = {
+const std::vector<uint32_t> cubeIndices = {
+    //Front Side
     0, 1, 2,
     2, 3, 0,
-    //2, 4, 3
 
-    6, 5, 4,
-    4, 7, 6,
+	//Back Side
+	4, 5, 6,
+	6, 7, 4,
 
-    0, 4, 5,
-    5, 1, 0,
+	//Right Side
+	8, 9, 10,
+	10, 11, 8,
 
-    1, 5, 6,
-    6, 2, 1,
+	//Left Side
+	12, 13, 14,
+	14, 15, 12,
 
-    2, 6, 7,
-    7, 3, 2,
+	//Top Side
+	16, 17, 18,
+	18, 19, 16,
 
-    3, 7, 4,
-    4, 0, 3
+	//Bottom Side
+	20, 21, 22,
+	22, 23, 20
 };
 
 
@@ -100,10 +200,19 @@ struct SwapChainSupportDetails {
 class TriangleApp
 {
     public:
-        //std::vector<Vertex> vertices;
-        //std::vector<uint16_t> indices;
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+        uint32_t indexOffset = 0;
+        Mesh cube;
+        Mesh cube2;
 
         void run() {
+            cube = { {-0.5f, -0.5f, -0.5f}, cubeVertices, cubeIndices };
+            cube2 = { {-0.25f, -2.25f, -0.25f}, cube2Vertices, cubeIndices };
+			cube2.scale(0.5f);
+
+            resetVertices();
+
             //vertices = generateVertices(std::nullopt, std::nullopt, std::nullopt, 1);
             //indices = generateIndeces(1);
             initWindow();
@@ -181,15 +290,39 @@ class TriangleApp
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
-uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+        void resetVertices()
+        {
+			indexOffset = 0;
+            std::vector<Vertex> _CVs = cube.getVertexes();
+            std::vector<Vertex> _CVs2 = cube2.getVertexes();
 
-const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation",
-};
+            std::vector<uint32_t> _CIs = cube.getIndices(indexOffset);
+            indexOffset += cube.vertices.size();
+            std::vector<uint32_t> _CIs2 = cube2.getIndices(indexOffset);
+            indexOffset += cube2.vertices.size();
 
-const std::vector<const char*> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
+            vertices.clear();
+            indices.clear();
+
+            vertices.resize(_CVs.size() + _CVs2.size());
+            indices.resize(_CIs.size() + _CIs2.size());
+
+            std::copy(_CVs.begin(), _CVs.end(), vertices.begin());
+            std::copy(_CVs2.begin(), _CVs2.end(), vertices.begin() + _CVs.size());
+
+            std::copy(_CIs.begin(), _CIs.end(), indices.begin());
+            std::copy(_CIs2.begin(), _CIs2.end(), indices.begin() + _CIs.size());
+        }
+
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+        const std::vector<const char*> validationLayers = {
+            "VK_LAYER_KHRONOS_validation",
+        };
+
+        const std::vector<const char*> deviceExtensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        };
 
         bool checkValidationLayerSupport();
 
@@ -219,12 +352,12 @@ const std::vector<const char*> deviceExtensions = {
             createRenderPass();
             createDescriptorSetLayout();
             createGraphicsPipeline();
-            createFramebuffers();
             createCommandPool();
+            createDepthResources();
+            createFramebuffers();
             createTextureImage();
             createTextureImageView();
             createTextureSampler();
-            createDepthResources();
             createVertexBuffer();
             createIndexBuffer();
             createUniformBuffers();
@@ -284,6 +417,7 @@ const std::vector<const char*> deviceExtensions = {
 
             createSwapChain();
             createImageViews();
+            createDepthResources();
             createFramebuffers();
         }
 
@@ -326,11 +460,35 @@ const std::vector<const char*> deviceExtensions = {
         void setupDebugMessenger();
 
         void mainLoop() {
+			float timePassed = 0.0f;
             while (!glfwWindowShouldClose(window)) {
                 double currentTime = glfwGetTime();
                 double deltaTime = currentTime - lastUpdatedTime;
 
                 glfwPollEvents();
+
+				timePassed += deltaTime * 10.0f;
+                if (timePassed > 2 * glm::pi<float>())
+                {
+                    timePassed -= 2 * glm::pi<float>();
+					std::cout << "Time Passed: " << timePassed << std::endl;
+                }
+
+                cube.position.r = glm::sin(timePassed) * 7 - (cube.getScale() / 2.0f);
+
+                resetVertices();
+
+				//std::cout << vertices.size() << std::endl;
+
+				std::cout << "Cube Position: " << cube.position.r << std::endl;
+
+				std::cout << "Cube Vertex 1 X: " << cube.getVertexes()[0].pos.r << std::endl;
+                std::cout << "Cube Vertex 2 X: " << cube2.getVertexes()[0].pos.r << std::endl;
+                std::cout << "Indices: ";
+				for (uint32_t index : indices) {
+					std::cout << index << " ";
+				}
+                std::cout << std::endl;
 
                 if (currentTime - lastFrameTime >= 1.0 / MAX_FPS) {
                     drawFrame();

@@ -51,25 +51,66 @@ struct Vertex3D {
 };
 
 
-struct Cube {
-    std::vector<Vertex3D> vertices;
+struct Mesh {
+	glm::vec3 position;
+	std::vector<Vertex> vertices; //Vertex Positions are Stored Relative to the Mesh Position
     std::vector<uint32_t> indices;
 
-    static Cube rotatedCube(Cube _cube, glm::vec3 rotation) {
-        Cube cube = _cube;
-        for (int i = 0; i < _cube.vertices.size(); i++) {
-            glm::vec3 pos = _cube.vertices[i].pos;
-            glm::vec3 newPos = pos;
-            newPos.x = pos.x * cos(rotation.y) - pos.z * sin(rotation.y);
-            newPos.z = pos.x * sin(rotation.y) + pos.z * cos(rotation.y);
-            newPos.y = pos.y * cos(rotation.x) - pos.z * sin(rotation.x);
-            newPos.z = pos.y * sin(rotation.x) + pos.z * cos(rotation.x);
-            newPos.x = pos.x * cos(rotation.z) - pos.y * sin(rotation.z);
-            newPos.y = pos.x * sin(rotation.z) + pos.y * cos(rotation.z);
-            cube.vertices[i].pos = newPos;
-        }
-        return cube;
-    };
+	std::vector<Vertex> isometricView(glm::vec3 cameraPos) {
+		std::vector<Vertex> isometricVertices;
+		for (Vertex vertex : vertices) {
+			glm::vec3 pos = vertex.pos;
+			glm::vec3 color = vertex.color;
+			glm::vec2 texCoord = vertex.texCoord;
+
+			glm::vec3 newPos = glm::vec3(pos.x - cameraPos.x, pos.z - cameraPos.z, pos.y - cameraPos.y);
+			isometricVertices.push_back({ newPos, color, texCoord });
+		}
+		return isometricVertices;
+	}
+
+	std::vector<Vertex> getVertexes() {
+		std::vector<Vertex> vertexPositions;
+		for (Vertex vertex : vertices) {
+			glm::vec3 pos = vertex.pos;
+			glm::vec3 color = vertex.color;
+			glm::vec2 texCoord = vertex.texCoord;
+
+			glm::vec3 newPos = glm::vec3(pos.x + position.x, pos.y + position.y, pos.z + position.z);
+			vertexPositions.push_back({ newPos, color, texCoord });
+		}
+		return vertexPositions;
+	}
+
+	std::vector<uint32_t> getIndices(uint32_t offset) {
+		std::vector<uint32_t> meshIndices;
+		for (uint32_t index : indices) {
+			meshIndices.push_back(index + offset);
+		}
+		return meshIndices;
+	}
+
+	void scale(float scale) {
+		for (Vertex& vertex : vertices) {
+			vertex.pos *= scale;
+		}
+	}
+
+	float getScale() {
+		float scale = 0;
+		for (Vertex vertex : vertices) {
+			if (vertex.pos.x > scale) {
+				scale = vertex.pos.x;
+			}
+			if (vertex.pos.y > scale) {
+				scale = vertex.pos.y;
+			}
+			if (vertex.pos.z > scale) {
+				scale = vertex.pos.z;
+			}
+		}
+		return scale;
+	}
 
 };
 
