@@ -268,6 +268,12 @@ class TriangleApp
         VkBuffer indexBuffer;
         VkDeviceMemory indexBufferMemory;
 
+        std::vector<VkBuffer> vertexBuffers;
+        std::vector<VkDeviceMemory> vertexBufferMemories;
+        std::vector<VkBuffer> indexBuffers;
+        std::vector<VkDeviceMemory> indexBufferMemories;
+		int vertexBufferIndex = 0;
+
         std::vector<VkBuffer> uniformBuffers;
         std::vector<VkDeviceMemory> uniformBuffersMemory;
         std::vector<void*> uniformBuffersMapped;
@@ -342,6 +348,12 @@ class TriangleApp
         static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
         void initVulkan() {
+
+            vertexBuffers.resize(3);
+            vertexBufferMemories.resize(3);
+            indexBuffers.resize(3);
+            indexBufferMemories.resize(3);
+
             createInstance();
             setupDebugMessenger();
             createSurface();
@@ -474,7 +486,22 @@ class TriangleApp
 					std::cout << "Time Passed: " << timePassed << std::endl;
                 }
 
-                cube.position.r = glm::sin(timePassed) * 7 - (cube.getScale() / 2.0f);
+                //cube.position.r = glm::sin(timePassed) * 7 - (cube.getScale() / 2.0f);
+                cube.scale(glm::sin(timePassed) * 0.75f + 1.25f);
+
+                int state = glfwGetKey(window, GLFW_KEY_O);
+                if (state == GLFW_PRESS)
+                {
+                    vkDestroyBuffer(device, vertexBuffer, nullptr);
+                    vkFreeMemory(device, vertexBufferMemory, nullptr);
+                    vkDestroyBuffer(device, indexBuffer, nullptr);
+                    vkFreeMemory(device, indexBufferMemory, nullptr);
+
+                    createVertexBuffer();
+                    createIndexBuffer();
+
+                    cube2 = cube;
+                }
 
                 resetVertices();
 
