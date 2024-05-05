@@ -3,6 +3,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include <vector>
 #include <array>
@@ -40,10 +42,6 @@ struct Vertex {
 
         return attributeDescriptions;
     }
-
-    /*static Vertex average(Vertex a, Vertex b) {
-        return { {(a.pos.x + b.pos.x) / 2, (a.pos.y + b.pos.y) / 2}, {(a.color.x + b.color.x) / 2, (a.color.y + b.color.y) / 2, (a.color.z + b.color.z) / 2} };
-    }*/
 };
 
 struct Vertex3D {
@@ -110,6 +108,17 @@ struct Mesh {
 			}
 		}
 		return scale;
+	}
+
+	void rotate(glm::vec3 rotation) {
+		for (Vertex& vertex : vertices) {
+			glm::vec3 pos = vertex.pos;
+			glm::vec3 newPos = glm::vec3(pos.x, pos.y, pos.z);
+			newPos = glm::rotateX(newPos, glm::radians(rotation.x));
+			newPos = glm::rotateY(newPos, glm::radians(rotation.y));
+			newPos = glm::rotateZ(newPos, glm::radians(rotation.z));
+			vertex.pos = newPos;
+		}
 	}
 
 };

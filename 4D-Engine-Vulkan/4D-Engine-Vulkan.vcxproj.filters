@@ -24,12 +24,21 @@
     <ClCompile Include="3D_Objects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Vertex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TriangleApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3D_Objects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
