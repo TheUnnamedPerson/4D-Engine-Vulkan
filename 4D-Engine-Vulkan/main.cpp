@@ -1,12 +1,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 
-#include "TriangleApp.h"
+//#include "TriangleApp.h"
+
+import Renderer;
 
 
 
 
 int main() {
-    TriangleApp app;
+    //TriangleApp app;
 
     try {
         app.run();

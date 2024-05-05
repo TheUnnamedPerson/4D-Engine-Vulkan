@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Include\Renderer\Renderer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="3D_Objects.cpp" />
     <ClCompile Include="Include\Renderer\Renderer.ixx" />

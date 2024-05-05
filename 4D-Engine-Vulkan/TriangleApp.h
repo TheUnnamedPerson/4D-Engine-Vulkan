@@ -26,8 +26,6 @@
 
 
 
-#include "Renderer/rDebugMessenger.h"
-#include "Renderer/rGraphicsPipeline.h"
 
 
 namespace Renderer {
@@ -352,34 +350,32 @@ namespace Renderer {
 
         void initVulkan() {
 
-            vertexBuffers.resize(3);
-            vertexBufferMemories.resize(3);
-            indexBuffers.resize(3);
-            indexBufferMemories.resize(3);
-
 			createInstance(); //done
             setupDebugMessenger(); //done
             createSurface(); //done
             pickPhysicalDevice(); //done
             createLogicalDevice(); //done
+
             createSwapChain(); //done
             createImageViews(); //done
             createRenderPass(); //done
-            createDescriptorSetLayout();
-            createGraphicsPipeline();
-            createCommandPool();
+            createUniformBuffers(); //done
+
+			createDescriptorSetLayout(); //done
+            createGraphicsPipeline(); //done
+            createDescriptorPool(); //done
+            createDescriptorSets(); //done
+
+            createCommandPool(); //done
             createDepthResources(); //done
 			createFramebuffers(); //done
-            createTextureImage();
+			createTextureImage(); //done
             createTextureImageView();
             createTextureSampler();
-            createVertexBuffer();
-            createIndexBuffer();
-            createUniformBuffers();
-            createDescriptorPool();
-            createDescriptorSets();
-            createCommandBuffers();
-            createSyncObjects();
+            createVertexBuffer(); //done
+            createIndexBuffer(); //done
+            createCommandBuffers(); //done
+            createSyncObjects(); //done
         }
 
         void createDepthResources();
@@ -482,7 +478,7 @@ namespace Renderer {
 
                 glfwPollEvents();
 
-                timePassed += deltaTime * 10.0f;
+                timePassed += deltaTime;
                 if (timePassed > 2 * glm::pi<float>())
                 {
                     timePassed -= 2 * glm::pi<float>();
