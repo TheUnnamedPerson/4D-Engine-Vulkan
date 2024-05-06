@@ -1,62 +1,43 @@
 
-#include "EngineApp.h"
+
+import Engine4D.Renderer;
 
 #include <iostream>
-#include <stdexcept>
-#include <cstdlib>
+#include <exception>
+#include <vector>
 
-int main()
-{
-	Engine::EngineApp app;
+#include "Vertex.h"
 
-    try
-    {
-		app.run();
-	}
-    catch (const std::exception& e)
-    {
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
-}
+#include <vld.h>
 
 
+const std::vector<Vertex> vertices = {
+    {{-0.5f, -0.5f, 0.0f}, {0.1f, 0.1f, 0.5f}, {1.0f, 0.0f}}, //0
+    {{0.5f, -0.5f, 0.0f}, {0.2f, 0.5f, 0.7f}, {0.0f, 0.0f}}, //1
+    {{0.5f, 0.5f, 0.0f}, {0.3f, 0.7f, 1.0f}, {0.0f, 1.0f}}, //2
+    {{-0.5f, 0.5f, 0.0f}, {0.05f, 0.25f, 0.7f}, {1.0f, 1.0f}}, //3
+};
 
-
-/*#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-
-#include <iostream>
+const std::vector<uint32_t> indices = {
+    0, 1, 2,
+    2, 3, 0,
+};
 
 int main() {
-    glfwInit();
+	VLDEnable();
+    
 
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Vulkan window", nullptr, nullptr);
+    Engine4D::rRenderer app = Engine4D::rRenderer();
 
-    uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+    try {
+        app.run();//vertices, indices);
+        
 
-    std::cout << extensionCount << " extensions supported\n";
-
-    glm::mat4 matrix;
-    glm::vec4 vec;
-    auto test = matrix * vec;
-
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
+    }
+    catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
 
-    glfwDestroyWindow(window);
-
-    glfwTerminate();
-
-    return 0;
-}*/
+    return EXIT_SUCCESS;
+}
