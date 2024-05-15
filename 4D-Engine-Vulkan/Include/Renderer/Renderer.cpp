@@ -3,6 +3,10 @@ module;
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
 #include <array>
 #include <cassert>
 #include <stdexcept>
@@ -11,6 +15,11 @@ module;
 module Engine4D.Renderer;
 
 namespace Engine4D {
+
+	struct PushConstantObject {
+		alignas(8) glm::vec2 resolution;
+		alignas(4) float time;
+	};
 
     rRenderer::rRenderer() {
         loadModels();
@@ -33,9 +42,12 @@ namespace Engine4D {
 
     void rRenderer::loadModels() {
         std::vector<rModel::Vertex> vertices{
-            {{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-            {{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}} };
+            {{-1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+            {{1.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+            {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+            {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+            {{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+            {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}} };
         model = std::make_unique<rModel>(device, vertices);
     }
 
@@ -149,12 +161,18 @@ namespace Engine4D {
 
 
     void rRenderer::createPipelineLayout() {
+
+		VkPushConstantRange pushConstantRange{};
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = sizeof(PushConstantObject);
+
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 0;
         pipelineLayoutInfo.pSetLayouts = nullptr; //&descriptorSetLayout;
-        pipelineLayoutInfo.pushConstantRangeCount = 0;
-        pipelineLayoutInfo.pPushConstantRanges = nullptr;
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if (vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) !=
             VK_SUCCESS) {
             throw std::runtime_error("Failed to Create Pipeline Layout!");
@@ -259,6 +277,16 @@ namespace Engine4D {
 
         pipeline->bind(commandBuffers[imageIndex]);
         model->bind(commandBuffers[imageIndex]);
+
+
+		PushConstantObject push{};
+		push.resolution = glm::vec2(swapChain->getSwapChainExtent().width, swapChain->getSwapChainExtent().height);
+		push.time = static_cast<float>(glfwGetTime());
+
+		vkCmdPushConstants(commandBuffers[imageIndex], pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantObject), &push);
+
+
+
         model->draw(commandBuffers[imageIndex]);
 
         vkCmdEndRenderPass(commandBuffers[imageIndex]);
