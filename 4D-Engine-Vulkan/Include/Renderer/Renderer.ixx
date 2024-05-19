@@ -34,6 +34,11 @@ namespace Engine4D {
 		static constexpr int WIDTH = 800;
 		static constexpr int HEIGHT = 600;
 
+		static constexpr int MAX_FPS = 60;
+
+		double lastUpdatedTime;
+		double lastFrameTime;
+
 		rRenderer();
 		~rRenderer();
 

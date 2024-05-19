@@ -32,9 +32,23 @@ namespace Engine4D {
     rRenderer::~rRenderer() { vkDestroyDescriptorSetLayout(device.device(), descriptorSetLayout, nullptr); vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
     void rRenderer::run() {
+        float timePassed = 0.0f;
         while (!window.shouldClose()) {
+
+            double currentTime = glfwGetTime();
+            double deltaTime = currentTime - lastUpdatedTime;
+
             glfwPollEvents();
-            drawFrame();
+
+            timePassed += deltaTime;
+
+            if (currentTime - lastFrameTime >= 1.0 / MAX_FPS) {
+                drawFrame();
+                lastFrameTime = currentTime;
+            }
+
+            lastUpdatedTime = currentTime;
+
         }
 
         vkDeviceWaitIdle(device.device());
@@ -107,7 +121,7 @@ namespace Engine4D {
         poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
         if (vkCreateDescriptorPool(device.device(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create descriptor pool!");
+            throw std::runtime_error("Failed to Create Descriptor Pool!");
         }
     }
 
@@ -122,7 +136,7 @@ namespace Engine4D {
 
         descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
         if (vkAllocateDescriptorSets(device.device(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate descriptor sets!");
+            throw std::runtime_error("Failed to Allocate Descriptor Sets!");
         }
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -245,7 +259,7 @@ namespace Engine4D {
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
         if (vkBeginCommandBuffer(commandBuffers[imageIndex], &beginInfo) != VK_SUCCESS) {
-            throw std::runtime_error("failed to begin recording command buffer!");
+            throw std::runtime_error("Failed to Begin Recording Command Buffer!");
         }
 
         VkRenderPassBeginInfo renderPassInfo{};
@@ -291,7 +305,7 @@ namespace Engine4D {
 
         vkCmdEndRenderPass(commandBuffers[imageIndex]);
         if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to record command buffer!");
+            throw std::runtime_error("Failed to Record Command Buffer!");
         }
     }
 
@@ -305,7 +319,7 @@ namespace Engine4D {
         }
 
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-            throw std::runtime_error("failed to acquire swap chain image!");
+            throw std::runtime_error("Failed to Acquire Swap Chain Image!");
         }
 
         recordCommandBuffer(imageIndex);
@@ -317,7 +331,7 @@ namespace Engine4D {
             return;
         }
         else if (result != VK_SUCCESS) {
-            throw std::runtime_error("failed to present swap chain image!");
+            throw std::runtime_error("Failed to Present Swap Chain image!");
         }
     }
 

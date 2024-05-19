@@ -76,7 +76,7 @@ namespace Engine4D {
 
     void rDevice::createInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
-            throw std::runtime_error("validation layers requested, but not available!");
+            throw std::runtime_error("Validation Layers Requested, but not Available!");
         }
 
         VkApplicationInfo appInfo = {};
@@ -109,7 +109,7 @@ namespace Engine4D {
         }
 
         if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create instance!");
+            throw std::runtime_error("Failed to Create Instance!");
         }
 
         hasGflwRequiredInstanceExtensions();
@@ -119,9 +119,9 @@ namespace Engine4D {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
         if (deviceCount == 0) {
-            throw std::runtime_error("failed to find GPUs with Vulkan support!");
+            throw std::runtime_error("Failed to Find GPUs with Vulkan Support!");
         }
-        std::cout << "Device count: " << deviceCount << std::endl;
+        std::cout << "Device Count: " << deviceCount << std::endl;
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
@@ -133,11 +133,11 @@ namespace Engine4D {
         }
 
         if (physicalDevice == VK_NULL_HANDLE) {
-            throw std::runtime_error("failed to find a suitable GPU!");
+            throw std::runtime_error("Failed to Find a Suitable GPU!");
         }
 
         vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-        std::cout << "physical device: " << properties.deviceName << std::endl;
+        std::cout << "Physical Device: " << properties.deviceName << std::endl;
     }
 
     void rDevice::createLogicalDevice() {
@@ -180,7 +180,7 @@ namespace Engine4D {
         }
 
         if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device_) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create logical device!");
+            throw std::runtime_error("Failed to Create Logical Device!");
         }
 
         vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphicsQueue_);
@@ -197,7 +197,7 @@ namespace Engine4D {
             VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
         if (vkCreateCommandPool(device_, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create command pool!");
+            throw std::runtime_error("Failed to Create Command Pool!");
         }
     }
 
@@ -239,7 +239,7 @@ namespace Engine4D {
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
         if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-            throw std::runtime_error("failed to set up debug messenger!");
+            throw std::runtime_error("Failed to Set Up Debug Messenger!");
         }
     }
 
@@ -288,19 +288,19 @@ namespace Engine4D {
         std::vector<VkExtensionProperties> extensions(extensionCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-        std::cout << "available extensions:" << std::endl;
+        std::cout << "Available Extensions:" << std::endl;
         std::unordered_set<std::string> available;
         for (const auto& extension : extensions) {
             std::cout << "\t" << extension.extensionName << std::endl;
             available.insert(extension.extensionName);
         }
 
-        std::cout << "required extensions:" << std::endl;
+        std::cout << "Required Extensions:" << std::endl;
         auto requiredExtensions = getRequiredExtensions();
         for (const auto& required : requiredExtensions) {
             std::cout << "\t" << required << std::endl;
             if (available.find(required) == available.end()) {
-                throw std::runtime_error("Missing required glfw extension");
+                throw std::runtime_error("Missing Required GLFW Extension");
             }
         }
     }
@@ -396,7 +396,7 @@ namespace Engine4D {
                 return format;
             }
         }
-        throw std::runtime_error("failed to find supported format!");
+        throw std::runtime_error("Failed to Find Supported Format!");
     }
 
     uint32_t rDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
@@ -409,7 +409,7 @@ namespace Engine4D {
             }
         }
 
-        throw std::runtime_error("failed to find suitable memory type!");
+        throw std::runtime_error("Failed to Find Suitable Memory Type!");
     }
 
     void rDevice::createBuffer(
@@ -425,7 +425,7 @@ namespace Engine4D {
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         if (vkCreateBuffer(device_, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create vertex buffer!");
+            throw std::runtime_error("Failed to Create Vertex Buffer!");
         }
 
         VkMemoryRequirements memRequirements;
@@ -437,7 +437,7 @@ namespace Engine4D {
         allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
         if (vkAllocateMemory(device_, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate vertex buffer memory!");
+            throw std::runtime_error("Failed to Allocate Vertex Buffer Memory!");
         }
 
         vkBindBufferMemory(device_, buffer, bufferMemory, 0);
@@ -520,7 +520,7 @@ namespace Engine4D {
         VkImage& image,
         VkDeviceMemory& imageMemory) {
         if (vkCreateImage(device_, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create image!");
+            throw std::runtime_error("Failed to Create Image!");
         }
 
         VkMemoryRequirements memRequirements;
@@ -532,11 +532,11 @@ namespace Engine4D {
         allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
         if (vkAllocateMemory(device_, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate image memory!");
+            throw std::runtime_error("Failed to Allocate Image Memory!");
         }
 
         if (vkBindImageMemory(device_, image, imageMemory, 0) != VK_SUCCESS) {
-            throw std::runtime_error("failed to bind image memory!");
+            throw std::runtime_error("Failed to Bind Image Memory!");
         }
     }
 
