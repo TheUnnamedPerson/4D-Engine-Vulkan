@@ -15,8 +15,8 @@ layout(push_constant) uniform u_values
 // Constants
 #define PI 3.1415925359
 #define TWO_PI 6.2831852
-#define MAX_STEPS 100
-#define MAX_DIST 100.
+#define MAX_STEPS 1000
+#define MAX_DIST 200.
 #define SURFACE_DIST .001
 
 layout(location = 0) in vec3 fragColor;
@@ -40,7 +40,7 @@ shape hyperSphere (vec4 p, float r, vec4 color) {
 	return shape(length(p) - r, color);
 }
 
-shape hyperBox( vec4 p, vec4 b, vec4 color )
+shape tesseract(vec4 p, vec4 b, vec4 color )
 {
   //p -= b1;
   //vec4 b = b2 - b1;
@@ -49,6 +49,142 @@ shape hyperBox( vec4 p, vec4 b, vec4 color )
   return shape(result, color);
   //return shape(length(max(q,0.0)) + min(max(q.x,max(q.y,max(q.z, q.w))),0.0), color);
 }
+
+shape hyperCylinder (vec4 p, float r, float depth, vec4 color) {
+	float d = length(p.xyz) - r;
+	float dW = 0;
+	if (p.w < 0 || p.w > depth) {
+		d = max(d, 0);
+		dW = min(abs(p.w), abs(p.w - depth));
+	}
+	return shape(sqrt(d * d + dW * dW), color);
+}
+
+float cylinder (vec3 p, float r, float depth) {
+	float d = length(p.xy) - r;
+	float dZ = 0;
+	if (p.z < 0 || p.z > depth) {
+		d = max(d, 0);
+		dZ = min(abs(p.z), abs(p.z - depth));
+	}
+	return sqrt(d * d + dZ * dZ);
+}
+
+shape cylindricalPrism (vec4 p, vec2 c, float depth, vec4 color) {
+	float d = cylinder(p.xyz, c.x, c.y);
+	float dW = 0;
+	if (p.w < 0 || p.w > depth) {
+		d = max(d, 0);
+		dW = min(abs(p.w), abs(p.w - depth));
+	}
+	return shape(sqrt(d * d + dW * dW), color);
+}
+
+shape tetrahedronalPrism(vec4 p, float depth, vec4 color)
+{
+	float d = (max(abs(p.x + p.y) - p.z, abs(p.x - p.y) + p.z) - 1.) / sqrt(3.);
+	float dW = 0;
+	if (p.w < 0 || p.w > depth) {
+		d = max(d, 0);
+		dW = min(abs(p.w), abs(p.w - depth));
+	}
+	return shape(sqrt(d * d + dW * dW), color);
+}
+
+shape cubePrism(vec4 p, vec3 b, float depth, vec4 color) {
+	vec3 q = abs(p.xyz) - b;
+	float d = length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+	float dW = 0;
+	if (p.w < 0 || p.w > depth) {
+		d = max(d, 0);
+		dW = min(abs(p.w), abs(p.w - depth));
+	}
+	return shape(sqrt(d * d + dW * dW), color);
+}
+
+shape torusPrism(vec4 p, float smallRadius, float largeRadius, float depth, vec4 color) {
+	float d = length(vec2(length(p.xz) - largeRadius, p.y)) - smallRadius;
+	float dW = 0;
+	if (p.w < 0 || p.w > depth) {
+		d = max(d, 0);
+		dW = min(abs(p.w), abs(p.w - depth));
+	}
+	return shape(sqrt(d * d + dW * dW), color);
+}
+
+float cone ( vec3 p, float base, float h )
+{
+  vec2 c = vec2(h / sqrt(base*base + h*h), base / sqrt(base*base + h*h));
+  vec2 q = h*vec2(c.x/c.y,-1.0);    
+  vec2 w = vec2( length(p.xz), p.y );
+  vec2 a = w - q*clamp( dot(w,q)/dot(q,q), 0.0, 1.0 );
+  vec2 b = w - q*vec2( clamp( w.x/q.x, 0.0, 1.0 ), 1.0 );
+  float k = sign( q.y );
+  float d = min(dot( a, a ),dot(b, b));
+  float s = max( k*(w.x*q.y-w.y*q.x),k*(w.y-q.y)  );
+  return sqrt(d)*sign(s);
+}
+
+shape conePrism(vec4 p, float base, float h, float depth, vec4 color)
+{
+	float d = cone(p.xyz, base, h);
+	float dW = 0;
+	if (p.w < 0 || p.w > depth) {
+		d = max(d, 0);
+		dW = min(abs(p.w), abs(p.w - depth));
+	}
+	return shape(sqrt(d * d + dW * dW), color);
+}
+
+shape hyperPlane(vec4 p, vec4 n, float h, vec4 color)
+{
+	return shape(dot(p,n) - h ,color);
+}
+
+shape unionSdf (shape shapeA, shape shapeB)
+{
+	if (shapeA.dis < shapeB.dis) return shape(shapeA.dis, shapeA.color);
+	else return shape(shapeB.dis, shapeB.color);
+}
+
+shape intersectSdf (shape shapeA, shape shapeB)
+{
+	return shape(max(shapeA.dis, shapeB.dis), (shapeA.color + shapeB.color) / 2);
+}
+
+shape subtractSdf (shape shapeA, shape shapeB)
+{
+	if (shapeA.dis > -1 * shapeB.dis) return shape(shapeA.dis, shapeA.color);
+	else return shape(-1 * shapeB.dis, shapeA.color);
+}
+
+
+shape smoothUnionSDF(shape shapeA, shape shapeB, float k ) {
+  float h = clamp(0.5 + 0.5 * (shapeA.dis - shapeB.dis) / k, 0., 1.);
+  float result = mix(shapeA.dis, shapeB.dis, h) - k * h * (1. - h);
+  float r = mix(shapeA.color.x, shapeB.color.x, h);
+  float g = mix(shapeA.color.y, shapeB.color.y, h);
+  float b = mix(shapeA.color.z, shapeB.color.z, h);
+  float a = mix(shapeA.color.w, shapeB.color.w, h);
+  return shape(result, vec4(r,g,b,a));
+}
+
+shape smoothIntersectSDF(shape shapeA, shape shapeB, float k) {
+	float h = clamp(0.5 - 0.5 * (shapeA.dis - shapeB.dis) / k, 0., 1.);
+	float result = mix(shapeA.dis, shapeB.dis, h ) + k * h * (1. - h);
+	float r = mix(shapeA.color.x, shapeB.color.x, h);
+	float g = mix(shapeA.color.y, shapeB.color.y, h);
+	float b = mix(shapeA.color.z, shapeB.color.z, h);
+	float a = mix(shapeA.color.w, shapeB.color.w, h);
+	return shape(result, vec4(r,g,b,a));
+}
+
+shape smoothSubtractSDF(shape shapeA, shape shapeB, float k) {
+    float h = clamp(0.5 - 0.5 * (shapeA.dis + shapeB.dis) / k, 0., 1.);
+	float result = mix(shapeA.dis, -shapeB.dis, h ) + k * h * (1. - h);
+    return shape(result, shapeA.color);
+}
+
 
 //enum rotationPlane {
 const int ZW = 1;
@@ -118,6 +254,10 @@ vec4 rotate4D(vec4 p, vec4 about, float angle, int plane)
 	return result + about;
 }
 
+int lastTransparentShape = -1;
+
+float _dep = 1;
+
 shape GetDist(vec4 p)
 {
     //vec4 s = vec4(0,1,6. + sin(push.u_time)*3.,1); //Sphere. xyz is position w is radius
@@ -125,48 +265,132 @@ shape GetDist(vec4 p)
 
 	shapes[0] = hyperSphere(p, 50, vec4(-1.));
 	shapes[0].dis *= -1.;
-	//shapes[0] = hyperSphere(p - vec4(0, sin(push.u_time * 3. + 1321), 0, 0), 1, vec4(0,0,1,1));
 
-	//shapes[1] = hyperBox(p - vec4(0, sin(push.u_time * 3. + 1321), 0, 0), vec4(1), vec4(0,0,1,1));
+	shapes[1] = hyperPlane(p, vec4(0,1,0,0), -2, vec4(0.1f,0.1f,0.5f,1));
 
-    //shapes[1] = hyperSphere(p - vec4(0, sin(push.u_time * 3. + 1321), 0, 0), 1, vec4(0,0,1,1)); //vec4(0,1,6. + sin(push.u_time)*3.,1), 1);
-	shapes[1] = hyperSphere(p - vec4(0, 1, 0, 0), 1, vec4(0,0,1,1));
+	//shapes[2] = hyperSphere(p - vec4(0, 1, 0, 0), 1, vec4(0,0,1,1));
+
+	float alpha = 1.;
+
+	shape sph = hyperSphere(p - vec4(0, 1, 0, 0), 1, vec4(0,0,1, alpha));
+
+	//sph.color.w = abs(sin(push.u_time * 2.));
+
+	vec4 _p = p;
+
+	_p = rotate4D(_p, vec4(0), push.u_time * 1.5, XZ);
+	_p = rotate4D(_p, vec4(0), push.u_time, YW);
+
+	//_p -= vec4(0.5 + 0.25 * sin(push.u_time * 0.5), 1, 0.5 + 0.25 * sin(push.u_time * 0.2), 0.5 + 0.25 * sin(push.u_time * .66));
+
+	//shapes[3] = tesseract(_p, vec4(1, 1, 1, 1), vec4(1.0f,0.1f,0.1f,1));
+
+	shape tess = tesseract(_p, vec4(1, 1, 1, 1), vec4(1.0f,0.1f,0.1f, alpha));
+
 	
-	shapes[2] = shape(abs(p.y + 2), vec4(0.1f,0.1f,0.5f,1));
+
+	//shape core = hyperSphere(p - vec4(0, 1, 0, 0), 0.5, vec4(0.0f,1.f,0.0f,1));
+
+	//shape core2 = hyperSphere(p - vec4(0, 1, 0, 0), 0.5 + abs(sin(push.u_time)) * 0.15, vec4(0.0f,1.f,0.0f,1
+	shape core2 = hyperSphere(p - vec4(0, 1, 0, 0), 0.65, vec4(0.0f,1.f,0.0f,1));
+
+	vec4 torP = p - vec4(-3 * abs(sin(push.u_time)), 1, 0, 0);
+
+	//vec4 torP = p - vec4(-1, 1, 0, 0.);
+	shape tor = torusPrism(torP, 0.3, 1, _dep, vec4(1.f, 1.f, 0.f, alpha));
+
+	vec4 tetP = p - vec4(1, 3 * abs(sin(push.u_time)), 0, 0);
+	//vec4 tetP = p - vec4(1, 1, 0, 0.);
+	shape tet = tetrahedronalPrism(tetP, _dep, vec4(1.f, 0.f, 1.f, alpha));
+
+	vec4 cylP = p - vec4(1, 1, 0, 0);
+	cylP = rotate4D(cylP, vec4(0), PI / 4, XW);
+	cylP = rotate4D(cylP, vec4(0), push.u_time, XZ);
+	shape cyl = cylindricalPrism(cylP, vec2(0.5, 0.5), _dep, vec4(0.4f, 0.9f, 0.7f, alpha));
+
+	//shape result = smoothUnionSDF(sph, tess, 0.5);
+
+	//result = smoothUnionSDF(result, tor, 0.5f);
+
+	//result = smoothUnionSDF(result, tet, 0.5f);
+
+	//result = smoothUnionSDF(result, cyl, 0.5f);
+
+	shape result = unionSdf(sph, tess);
+	result = unionSdf(result, tor);
+	result = unionSdf(result, tet);
+	result = unionSdf(result, cyl);
+
+	//result = subtractSdf(result, core2);
+
+	//result = smoothUnionSDF(tor, tet, 0.5f);
+
+	//result = cubePrism(p - vec4(0,1,1,0), vec3(1,1,1), _dep, vec4(1.f, 1.f, 0.f, alpha));
+
+	//shape result = smoothUnionSDF(sph, core, 0.5);
+
+	shapes[2] = result;
+
+	//shapes[2] = sph;
+
+	//shapes[3] = core;
 
     vec4 b = vec4(5, 0, 20, 0);
-    //vec4 b2 = vec4(6, 2, 21, 2);
-
-	//vec4 b3 = (b1 + b2) / 2.;
-
-	b = rotate4D(b, b, push.u_time, YZ);
-	b = rotate4D(b, b, push.u_time, XW);
-
-	//b1 = inverse(b1);
-	//b2 = inverse(b2);
-
-    //shapes[1] = hyperBox(p, b, vec4(0,1,0,1));
-    //shapes[1] = hyperSphere(p, vec4(5,1,5,0.5f), 1, vec4(0,1,0,1));
-    //shapes[2] = shape(50, vec4(0.1f,0.1f,0.5f,1));
 
     int index = 0;
 
     for(int i = 1; i < shapes.length(); i++) {
-        index = (shapes[i].dis < shapes[index].dis) ? i : index;
+		if (i != lastTransparentShape || shapes[i].color.w == 1.)
+		index = (shapes[i].dis < shapes[index].dis) ? i : index;
 	}
+
+	if (shapes[index].color.w < 1. && shapes[index].color.w >= 0) lastTransparentShape = index;
 
     return shapes[index];
 }
 
+const int MAX_TRANSPARENT_SHAPES = 16;
+
 shape RayMarch(vec4 ro, vec4 rd) 
 {
     shape dO = shape(0, vec4(0.5f,0.5f,0.5f,1)); //Distance Origin
+	shape[MAX_TRANSPARENT_SHAPES] transparentShapes;
+	transparentShapes[0] = shape(0, vec4(-1.));
+	int nT = 0;
+	lastTransparentShape = -1;
     for(int i=0;i<MAX_STEPS;i++)
     {
+		if (nT >= MAX_TRANSPARENT_SHAPES) nT = MAX_TRANSPARENT_SHAPES - 1;
         vec4 p = ro + rd * dO.dis;
         shape ds = GetDist(p); // ds is Distance Scene
         dO.dis += ds.dis;
-        if(dO.dis > MAX_DIST || ds.dis < SURFACE_DIST) { dO.color = ds.color; break; }
+        if(dO.dis > MAX_DIST || ds.dis < SURFACE_DIST) {
+			if (ds.color.w < 1. && ds.color.w >= 0) {
+				transparentShapes[nT] = ds;
+				nT = nT + 1;
+			}
+			else {
+				dO.color = ds.color;
+				if (ds.color != vec4(-1.))
+				{
+					for (int j = 0; j < nT; j++)
+					{
+						if (transparentShapes[j].dis < dO.dis)
+						{
+							dO.color.x = mix(dO.color.x, transparentShapes[j].color.x, transparentShapes[j].color.w);
+							dO.color.y = mix(dO.color.y, transparentShapes[j].color.y, transparentShapes[j].color.w);
+							dO.color.z = mix(dO.color.z, transparentShapes[j].color.z, transparentShapes[j].color.w);
+						}
+					}
+				}
+				lastTransparentShape = -1;
+				break;
+			}
+		}
+		else
+		{
+			lastTransparentShape = -1; 
+		}
     }
 	//dO.color = dO.color * vec4(mod(dO.dis / 1000, 10),mod(dO.dis / 100, 10),mod(dO.dis / 10, 10),1);
     return dO;
@@ -236,29 +460,37 @@ void main()
     vec4 ro = baseRo; // Ray Origin/ Camera
     vec4 rd = normalize(vec4(uv.x,uv.y, 1, 0));
 
-	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.5 + 0.25 * (sin(push.u_time / 4) + 1)), XY);
-	ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.45 + 0.5 * 0.5 * (sin(push.u_time / 4.) + 2)), XY);
-	//rd = rotate4D(rd, vec4(0), atan(ro.y/ro.z), XW);
-
 	rd = rotate4D(rd, vec4(0), -1 * atan( ro.y / length( vec2(ro.x, ro.z) ) ), XW);
 	rd = rotate4D(rd, vec4(0), -1 * atan(ro.x/ro.z), YW);
 	
 	rd = normalize(rd);
 
+	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.5 + 0.25 * (sin(push.u_time / 4) + 1)), XY);
+	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.45 + 0.5 * 0.5 * (sin(push.u_time / 4.) + 2)), XY);
+	//rd = rotate4D(rd, vec4(0), atan(ro.y/ro.z), XW);
+
+	//float t = PI * ( -0.45 + 0.5 * 0.5 * (sin(push.u_time / 4.) + 2) );
+
+	float t = push.u_time / 0.33;
+
+	//ro.w = 0.5;
+	ro.w = sin(t / 2);
+
+	//ro = rotate4D(ro, vec4(0), t, YW);
+	//rd = rotate4D(rd, vec4(0), t, YW);
+	//rd = normalize(rd);
 
     shape d = RayMarch(ro,rd); // Distance
     
 	float dif = getLight(ro + rd * d.dis);
 
-    //vec4 color = vec4(d.dis, d.dis, d.dis,1);
-    vec4 color = d.color * dif;
+    vec4 color = d.color;
 	if (d.color == vec4(-1.))
 	{
-		if (0.5 * 0.5 * (sin(push.u_time / 2.) + 2) > 0) color = vec4(0.9, 0.9, 0.9, 1);
-		else color = vec4(0.1, 0.1, 0.1 ,1);
-		//color = vec4(0.9, 0.9, 0.5 + (0.4 * 0.5 * (sin(push.u_time / 4) + 1)),1);
-		//color = vec4(ro.y / baseRo.y / 4. + 0.75, 0., 0.,1);
+		color = vec4(0.1, 0.1, 0.1 ,1);
+		//color = vec4(camdep, camdep, camdep, 1);
 	}
+	else color *= dif;
 
     outColor = color;
 }
