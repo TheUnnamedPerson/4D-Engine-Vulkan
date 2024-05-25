@@ -9,6 +9,8 @@ layout(push_constant) uniform u_values
 {
 	vec2 u_resolution;
     float u_time;
+	float u_rot;
+	vec4 u_cam;
 } push;
 
  
@@ -278,8 +280,8 @@ shape GetDist(vec4 p)
 
 	vec4 _p = p;
 
-	_p = rotate4D(_p, vec4(0), push.u_time * 1.5, XZ);
-	_p = rotate4D(_p, vec4(0), push.u_time, YW);
+	//_p = rotate4D(_p, vec4(0), push.u_time * 1.5, XZ);
+	//_p = rotate4D(_p, vec4(0), push.u_time, YW);
 
 	//_p -= vec4(0.5 + 0.25 * sin(push.u_time * 0.5), 1, 0.5 + 0.25 * sin(push.u_time * 0.2), 0.5 + 0.25 * sin(push.u_time * .66));
 
@@ -294,19 +296,20 @@ shape GetDist(vec4 p)
 	//shape core2 = hyperSphere(p - vec4(0, 1, 0, 0), 0.5 + abs(sin(push.u_time)) * 0.15, vec4(0.0f,1.f,0.0f,1
 	shape core2 = hyperSphere(p - vec4(0, 1, 0, 0), 0.65, vec4(0.0f,1.f,0.0f,1));
 
-	vec4 torP = p - vec4(-3 * abs(sin(push.u_time)), 1, 0, 0);
+	vec4 torP = p - vec4(-3 * 0.66f, 1, 0, 0);
 
 	//vec4 torP = p - vec4(-1, 1, 0, 0.);
 	shape tor = torusPrism(torP, 0.3, 1, _dep, vec4(1.f, 1.f, 0.f, alpha));
 
-	vec4 tetP = p - vec4(1, 3 * abs(sin(push.u_time)), 0, 0);
+	vec4 tetP = p - vec4(1, 3 * 0.25f, 0, 0);
 	//vec4 tetP = p - vec4(1, 1, 0, 0.);
 	shape tet = tetrahedronalPrism(tetP, _dep, vec4(1.f, 0.f, 1.f, alpha));
 
 	vec4 cylP = p - vec4(1, 1, 0, 0);
 	cylP = rotate4D(cylP, vec4(0), PI / 4, XW);
-	cylP = rotate4D(cylP, vec4(0), push.u_time, XZ);
-	shape cyl = cylindricalPrism(cylP, vec2(0.5, 0.5), _dep, vec4(0.4f, 0.9f, 0.7f, alpha));
+	cylP = rotate4D(cylP, vec4(0), PI / 5, XZ);
+	shape cyl = tesseract(cylP, vec4(0.5, 0.5, 3, 5), vec4(0.4f, 0.9f, 0.7f, alpha));
+	//shape cyl = cylindricalPrism(cylP, vec2(0.5, 3), 5, vec4(0.4f, 0.9f, 0.7f, alpha));
 
 	//shape result = smoothUnionSDF(sph, tess, 0.5);
 
@@ -451,6 +454,45 @@ float getLight (vec4 p)
 
 	return dif;
 }
+
+float getLight3D (vec4 p)
+{
+	//vec4 light = vec4(-5, 12, -7, 0);
+	light lights[2];
+
+	lights[0] = light(vec4(5, 12, -7, 0), vec4(1, 1, 1, 1), 0);
+	lights[1] = light(vec4(1,-1, 1, 0), vec4(1, 1, 1, 1), 1);
+
+	//light.y *= sin(push.u_time / 2.);
+
+	
+
+	float dif = 0.0;
+
+	for (int i = 0; i < lights.length(); i++)
+	{
+		if (lights[i].type == 0)
+		{
+			vec3 l = normalize(lights[0].value.xyz - p.xyz);
+			vec3 normal = getNormal(p).xyz;
+			normal = normalize(normal);
+
+			dif = max(dot(normal, l), dif);
+			//float spec = pow(max(dot(normal, h), 0.0), 32.0);
+			//return diff * 0.5 + spec;
+		}
+		else
+		{
+			vec3 l = normalize(lights[1].value.xyz * -1.);
+			vec3 normal = getNormal(p).xyz;
+			normal = normalize(normal);
+
+			dif = max(dot(normal, l), dif);
+		}
+	}
+
+	return dif;
+}
  
 void main()
 {
@@ -471,10 +513,17 @@ void main()
 
 	//float t = PI * ( -0.45 + 0.5 * 0.5 * (sin(push.u_time / 4.) + 2) );
 
-	float t = push.u_time / 0.33;
+	//float t = push.u_time / 0.33;
+	float t = push.u_rot;
 
 	//ro.w = 0.5;
-	ro.w = sin(t / 2);
+	//ro.w = sin(t / 2);
+
+	//ro = rotate4D(ro, ro, t, YW);
+	rd = rotate4D(rd, vec4(0), -t, YW);
+	//vec4 camPos = rotate4D(push.u_cam, vec4(0), t, YW);
+	vec4 camPos = push.u_cam;
+	ro += camPos;
 
 	//ro = rotate4D(ro, vec4(0), t, YW);
 	//rd = rotate4D(rd, vec4(0), t, YW);
@@ -482,7 +531,8 @@ void main()
 
     shape d = RayMarch(ro,rd); // Distance
     
-	float dif = getLight(ro + rd * d.dis);
+	//float dif = getLight(ro + rd * d.dis);
+	float dif = getLight3D(ro + rd * d.dis);
 
     vec4 color = d.color;
 	if (d.color == vec4(-1.))
@@ -490,7 +540,7 @@ void main()
 		color = vec4(0.1, 0.1, 0.1 ,1);
 		//color = vec4(camdep, camdep, camdep, 1);
 	}
-	else color *= dif;
+	else color.xyz *= dif;
 
     outColor = color;
 }

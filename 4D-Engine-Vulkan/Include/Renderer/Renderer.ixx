@@ -31,6 +31,8 @@ namespace Engine4D {
 			alignas(16) glm::mat4 proj;
 		};
 
+		void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 		static constexpr int WIDTH = 800;
 		static constexpr int HEIGHT = 600;
 
@@ -80,5 +82,8 @@ namespace Engine4D {
 		VkDeviceMemory textureImageMemory;
 		VkImageView textureImageView;
 		VkSampler textureSampler;
+
+		float rotation = 0.0f;
+		glm::vec4 cameraPosition = { 0.0f, 0.0f, 2.0f, 1.0f };
 	};
 }

@@ -25,6 +25,8 @@ namespace Engine4D {
 
 		void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
+		GLFWwindow* getWindow() { return window; }
+
 		private:
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 		void initWindow();

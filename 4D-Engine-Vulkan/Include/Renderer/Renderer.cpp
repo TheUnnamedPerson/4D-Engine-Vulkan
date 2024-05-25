@@ -5,12 +5,18 @@ module;
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <array>
 #include <cassert>
 #include <stdexcept>
 #include <memory>
+#include <string>
+
+#include <iostream>
 
 module Engine4D.Renderer;
 
@@ -19,6 +25,8 @@ namespace Engine4D {
 	struct PushConstantObject {
 		alignas(8) glm::vec2 resolution;
 		alignas(4) float time;
+        alignas(4) float rot;
+		alignas(16) glm::vec4 cameraPosition;
 	};
 
     rRenderer::rRenderer() {
@@ -31,6 +39,16 @@ namespace Engine4D {
 
     rRenderer::~rRenderer() { vkDestroyDescriptorSetLayout(device.device(), descriptorSetLayout, nullptr); vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
+	std::string vec4ToString(glm::vec4 vec) {
+		return std::to_string(vec.x) + " " + std::to_string(vec.y) + " " + std::to_string(vec.z) + " " + std::to_string(vec.w);
+	}
+
+	constexpr float RotateMultiplier = -0.001f;
+    constexpr float MoveMultiplierX = 0.002f;
+    constexpr float MoveMultiplierY = 0.002f;
+    constexpr float MoveMultiplierZ = 0.002f;
+    constexpr float MoveMultiplierW = 0.0006f;
+
     void rRenderer::run() {
         float timePassed = 0.0f;
         while (!window.shouldClose()) {
@@ -39,6 +57,61 @@ namespace Engine4D {
             double deltaTime = currentTime - lastUpdatedTime;
 
             glfwPollEvents();
+
+            float shiftMult = 1;
+
+            int stateShift = glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_SHIFT);
+            if (stateShift == GLFW_PRESS)
+				shiftMult = 2.0f;
+
+            int stateE = glfwGetKey(window.getWindow(), GLFW_KEY_E);
+            if (stateE == GLFW_PRESS)
+                rotation += RotateMultiplier * shiftMult;
+            int stateQ = glfwGetKey(window.getWindow(), GLFW_KEY_Q);
+            if (stateQ == GLFW_PRESS)
+                rotation -= RotateMultiplier * shiftMult;
+            rotation = fmod(rotation, 6.28318530718f);
+
+            glm::vec4 nextCamPos = glm::vec4(0,0,0,0);
+
+            int stateW = glfwGetKey(window.getWindow(), GLFW_KEY_W);
+            if (stateW == GLFW_PRESS)
+                nextCamPos.z += MoveMultiplierZ * shiftMult;
+            int stateS = glfwGetKey(window.getWindow(), GLFW_KEY_S);
+            if (stateS == GLFW_PRESS)
+                nextCamPos.z -= MoveMultiplierZ * shiftMult;
+
+            int stateA = glfwGetKey(window.getWindow(), GLFW_KEY_A);
+            if (stateA == GLFW_PRESS)
+                nextCamPos.x -= MoveMultiplierX * shiftMult;
+            int stateD = glfwGetKey(window.getWindow(), GLFW_KEY_D);
+            if (stateD == GLFW_PRESS)
+                nextCamPos.x += MoveMultiplierX * shiftMult;
+
+            int stateX = glfwGetKey(window.getWindow(), GLFW_KEY_X);
+            if (stateX == GLFW_PRESS)
+                nextCamPos.y += MoveMultiplierY * shiftMult;
+            int stateZ = glfwGetKey(window.getWindow(), GLFW_KEY_Z);
+            if (stateZ == GLFW_PRESS)
+                nextCamPos.y -= MoveMultiplierY * shiftMult;
+
+            glm::mat4 camRot = glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, -1.0f, 0.0f));
+
+            //std::cout << glm::to_string(camRot) << std::endl;
+
+			nextCamPos = camRot * nextCamPos;
+
+            int stateT = glfwGetKey(window.getWindow(), GLFW_KEY_T);
+            if (stateT == GLFW_PRESS)
+                nextCamPos.w += MoveMultiplierW * shiftMult;
+            int stateG = glfwGetKey(window.getWindow(), GLFW_KEY_G);
+            if (stateG == GLFW_PRESS)
+                nextCamPos.w -= MoveMultiplierW * shiftMult;
+
+			cameraPosition += nextCamPos;
+
+            std::cout << vec4ToString(cameraPosition) << " ; " << vec4ToString(nextCamPos) << " ; " << rotation << std::endl;
+
 
             timePassed += deltaTime;
 
@@ -55,14 +128,15 @@ namespace Engine4D {
     }
 
     void rRenderer::loadModels() {
-        std::vector<rModel::Vertex> vertices{
+        rModel::Builder modelBuilder{};
+        modelBuilder.vertices = {
             {{-1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
             {{1.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
             {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
             {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
             {{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-            {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}} };
-        model = std::make_unique<rModel>(device, vertices);
+            {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}} };		
+        model = std::make_unique<rModel>(device, modelBuilder);
     }
 
     void rRenderer::createDescriptorSetLayout() {
@@ -296,6 +370,8 @@ namespace Engine4D {
 		PushConstantObject push{};
 		push.resolution = glm::vec2(swapChain->getSwapChainExtent().width, swapChain->getSwapChainExtent().height);
 		push.time = static_cast<float>(glfwGetTime());
+		push.rot = rotation;
+		push.cameraPosition = cameraPosition;
 
 		vkCmdPushConstants(commandBuffers[imageIndex], pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantObject), &push);
 
