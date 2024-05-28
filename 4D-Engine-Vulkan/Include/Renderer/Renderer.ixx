@@ -20,16 +20,17 @@ import Engine4D.Renderer.Device;
 import Engine4D.Renderer.Model;
 import Engine4D.Renderer.Pipeline;
 import Engine4D.Renderer.Window;
+import Engine4D.Renderer.Buffer;
+
+import Engine4D.Structs;
+
+import Engine4D.Time;
 
 namespace Engine4D {
 	export class rRenderer {
 		public:
-
-		struct UniformBufferObject {
-			alignas(16) glm::mat4 model;
-			alignas(16) glm::mat4 view;
-			alignas(16) glm::mat4 proj;
-		};
+		void (*main_Update)();
+		void (*main_Late_Update)();
 
 		void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -38,10 +39,15 @@ namespace Engine4D {
 
 		static constexpr int MAX_FPS = 30;
 
+		TimeClass* Time;
+
+		std::vector<Instruction>* instructions;
+
 		double lastUpdatedTime;
 		double lastFrameTime;
 
 		rRenderer();
+		rRenderer(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time);
 		~rRenderer();
 
 		rRenderer(const rRenderer&) = delete;

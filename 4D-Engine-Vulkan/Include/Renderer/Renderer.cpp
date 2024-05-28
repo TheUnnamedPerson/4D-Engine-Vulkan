@@ -22,6 +22,20 @@ module Engine4D.Renderer;
 
 namespace Engine4D {
 
+    /*struct UniformBufferObject {
+        alignas(16) glm::mat4 model;
+        alignas(16) glm::mat4 view;
+        alignas(16) glm::mat4 proj;
+    };*/
+
+    struct UniformBufferObject {
+		std::vector<Instruction> instructions;
+    };    
+
+	struct Scene {
+		std::vector<Instruction> instructions;
+	};
+
 	struct PushConstantObject {
 		alignas(8) glm::vec2 resolution;
 		alignas(4) float time;
@@ -32,6 +46,19 @@ namespace Engine4D {
     rRenderer::rRenderer() {
         loadModels();
 		createDescriptorSetLayout();
+        createPipelineLayout();
+        recreateSwapChain();
+        createCommandBuffers();
+    }
+
+    rRenderer::rRenderer(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time) {
+
+		main_Update = _main_Update;
+		main_Late_Update = _main_Late_Update;
+		Time = time;
+
+        loadModels();
+        createDescriptorSetLayout();
         createPipelineLayout();
         recreateSwapChain();
         createCommandBuffers();
@@ -50,6 +77,18 @@ namespace Engine4D {
     constexpr float MoveMultiplierW = 0.0006f;
 
     void rRenderer::run() {
+
+		rBuffer globalBuffer(
+            device,
+            sizeof(UniformBufferObject),
+            rSwapChain::MAX_FRAMES_IN_FLIGHT,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+            device.properties.limits.minUniformBufferOffsetAlignment
+        );
+		globalBuffer.map();
+
+
         float timePassed = 0.0f;
         while (!window.shouldClose()) {
 
@@ -62,7 +101,10 @@ namespace Engine4D {
 
             int stateShift = glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_SHIFT);
             if (stateShift == GLFW_PRESS)
-				shiftMult = 2.0f;
+				shiftMult += 1.0f;
+            int stateControl = glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_CONTROL);
+            if (stateControl == GLFW_PRESS)
+                shiftMult -= 0.75f;
 
             int stateE = glfwGetKey(window.getWindow(), GLFW_KEY_E);
             if (stateE == GLFW_PRESS)
@@ -110,15 +152,20 @@ namespace Engine4D {
 
 			cameraPosition += nextCamPos;
 
-            std::cout << vec4ToString(cameraPosition) << " ; " << vec4ToString(nextCamPos) << " ; " << rotation << std::endl;
-
-
-            timePassed += deltaTime;
+            std::cout << vec4ToString(cameraPosition) << " ; " << vec4ToString(nextCamPos) << " ; " << rotation << std::endl;            
 
             if (currentTime - lastFrameTime >= 1.0 / MAX_FPS) {
+                Time->deltaTime = deltaTime;
+				main_Update();
+                deltaTime = currentTime - lastUpdatedTime;
+				Time->deltaTime = deltaTime;
+				main_Late_Update();
+
                 drawFrame();
                 lastFrameTime = currentTime;
             }
+
+            timePassed += deltaTime;
 
             lastUpdatedTime = currentTime;
 

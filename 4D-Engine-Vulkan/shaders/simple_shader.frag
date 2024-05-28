@@ -274,26 +274,13 @@ shape GetDist(vec4 p)
 
 	float alpha = 1.;
 
-	shape sph = hyperSphere(p - vec4(0, 1, 0, 0), 1, vec4(0,0,1, alpha));
+	vec4 sphS = vec4(1, 2, 1, 1);
 
-	//sph.color.w = abs(sin(push.u_time * 2.));
+	shape sph = hyperSphere((p / sphS) - vec4(0, 1, 0, 0), 1, vec4(0,0,1, alpha));
+	sph.dis *= max(sphS.x, max(sphS.y, max(sphS.z, sphS.w)));
 
 	vec4 _p = p;
 
-	//_p = rotate4D(_p, vec4(0), push.u_time * 1.5, XZ);
-	//_p = rotate4D(_p, vec4(0), push.u_time, YW);
-
-	//_p -= vec4(0.5 + 0.25 * sin(push.u_time * 0.5), 1, 0.5 + 0.25 * sin(push.u_time * 0.2), 0.5 + 0.25 * sin(push.u_time * .66));
-
-	//shapes[3] = tesseract(_p, vec4(1, 1, 1, 1), vec4(1.0f,0.1f,0.1f,1));
-
-	shape tess = tesseract(_p, vec4(1, 1, 1, 1), vec4(1.0f,0.1f,0.1f, alpha));
-
-	
-
-	//shape core = hyperSphere(p - vec4(0, 1, 0, 0), 0.5, vec4(0.0f,1.f,0.0f,1));
-
-	//shape core2 = hyperSphere(p - vec4(0, 1, 0, 0), 0.5 + abs(sin(push.u_time)) * 0.15, vec4(0.0f,1.f,0.0f,1
 	shape core2 = hyperSphere(p - vec4(0, 1, 0, 0), 0.65, vec4(0.0f,1.f,0.0f,1));
 
 	vec4 torP = p - vec4(-3 * 0.66f, 1, 0, 0);
@@ -319,7 +306,8 @@ shape GetDist(vec4 p)
 
 	//result = smoothUnionSDF(result, cyl, 0.5f);
 
-	shape result = unionSdf(sph, tess);
+	shape result = sph;
+	//shape result = unionSdf(sph, tess);
 	result = unionSdf(result, tor);
 	result = unionSdf(result, tet);
 	result = unionSdf(result, cyl);
@@ -401,7 +389,7 @@ shape RayMarch(vec4 ro, vec4 rd)
 
 vec4 getNormal(vec4 p)
 {
-	float eps = 0.0001;
+	float eps = SURFACE_DIST;
 	float d = GetDist(p).dis;
 
 	vec4 n = vec4(d - GetDist(p - vec4(eps, 0, 0, 0)).dis, d - GetDist(p - vec4(0, eps, 0, 0)).dis, d - GetDist(p - vec4(0, 0, eps, 0)).dis, d - GetDist(p - vec4(0, 0, 0, eps)).dis);
@@ -421,34 +409,51 @@ struct light {
 float getLight (vec4 p)
 {
 	//vec4 light = vec4(-5, 12, -7, 0);
-	light lights[2];
+	light lights[1];
 
 	lights[0] = light(vec4(5, 12, -7, 0), vec4(1, 1, 1, 1), 0);
-	lights[1] = light(vec4(1,-1, 1, 0), vec4(1, 1, 1, 1), 1);
+	//lights[1] = light(vec4(1,-1, 1, 0), vec4(1, 1, 1, 1), 1);
 
 	//light.y *= sin(push.u_time / 2.);
 
 	
 
 	float dif = 0.0;
+	int index = 0;
 
 	for (int i = 0; i < lights.length(); i++)
 	{
 		if (lights[i].type == 0)
 		{
-			vec4 l = normalize(lights[0].value - p);
+			vec4 l = normalize(lights[i].value - p);
 			vec4 normal = getNormal(p);
 
-			dif = max(dot(normal, l), dif);
+			float dT = clamp(dot(normal, l), 0, 1);
+			float r = RayMarch(p + normal + SURFACE_DIST * 2, l).dis;
+
+			if (r < length(lights[i].value.xyz - p.xyz)) dT *= 0.1;
+
+			if (dT > dif)
+			{
+				dif = dT;
+				index = i;
+			}
+
 			//float spec = pow(max(dot(normal, h), 0.0), 32.0);
 			//return diff * 0.5 + spec;
 		}
 		else
 		{
-			vec4 l = normalize(lights[1].value * -1.);
+			vec4 l = normalize(lights[i].value * -1.);
 			vec4 normal = getNormal(p);
 
-			dif = max(dot(normal, l), dif);
+			float dT = clamp(dot(normal, l), 0, 1);
+
+			if (dT > dif)
+			{
+				dif = dT;
+				index = i;
+			}
 		}
 	}
 
@@ -457,37 +462,48 @@ float getLight (vec4 p)
 
 float getLight3D (vec4 p)
 {
-	//vec4 light = vec4(-5, 12, -7, 0);
-	light lights[2];
+	light lights[1];
 
 	lights[0] = light(vec4(5, 12, -7, 0), vec4(1, 1, 1, 1), 0);
-	lights[1] = light(vec4(1,-1, 1, 0), vec4(1, 1, 1, 1), 1);
-
-	//light.y *= sin(push.u_time / 2.);
+	//lights[1] = light(vec4(1,-1, 1, 0), vec4(1, 1, 1, 1), 1);
 
 	
 
 	float dif = 0.0;
+	int index = 0;
 
 	for (int i = 0; i < lights.length(); i++)
 	{
 		if (lights[i].type == 0)
 		{
-			vec3 l = normalize(lights[0].value.xyz - p.xyz);
+			vec3 l = normalize(lights[i].value.xyz - p.xyz);
 			vec3 normal = getNormal(p).xyz;
 			normal = normalize(normal);
 
-			dif = max(dot(normal, l), dif);
-			//float spec = pow(max(dot(normal, h), 0.0), 32.0);
-			//return diff * 0.5 + spec;
+			float dT = clamp(dot(normal, l), 0, 1);
+			float r = RayMarch(p + vec4(normal, 0) + SURFACE_DIST * 2, vec4(l, 0)).dis;
+
+			if (r < length(lights[i].value.xyz - p.xyz)) dT *= 0.1;
+
+			if (dT > dif)
+			{
+				dif = dT;
+				index = i;
+			}
 		}
 		else
 		{
-			vec3 l = normalize(lights[1].value.xyz * -1.);
+			vec3 l = normalize(lights[i].value.xyz * -1.);
 			vec3 normal = getNormal(p).xyz;
 			normal = normalize(normal);
 
-			dif = max(dot(normal, l), dif);
+			float dT = clamp(dot(normal, l), 0, 1);
+
+			if (dT > dif)
+			{
+				dif = dT;
+				index = i;
+			}
 		}
 	}
 
@@ -531,8 +547,8 @@ void main()
 
     shape d = RayMarch(ro,rd); // Distance
     
-	//float dif = getLight(ro + rd * d.dis);
-	float dif = getLight3D(ro + rd * d.dis);
+	float dif = getLight(ro + rd * d.dis);
+	//float dif = getLight3D(ro + rd * d.dis);
 
     vec4 color = d.color;
 	if (d.color == vec4(-1.))

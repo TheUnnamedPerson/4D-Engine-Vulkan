@@ -137,6 +137,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Include\Engine\Components.cpp" />
+    <ClCompile Include="Include\Engine\Components.ixx" />
+    <ClCompile Include="Include\Engine\Engine.cpp" />
+    <ClCompile Include="Include\Engine\Engine.ixx" />
+    <ClCompile Include="Include\Engine\Primitives.cpp" />
+    <ClCompile Include="Include\Engine\Primitives.ixx" />
+    <ClCompile Include="Include\Engine\Structs.ixx" />
+    <ClCompile Include="Include\Engine\Time.ixx" />
     <ClCompile Include="Include\Renderer\Renderer.Buffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
