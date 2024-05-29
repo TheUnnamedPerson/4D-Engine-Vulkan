@@ -112,7 +112,7 @@ namespace Engine4D {
         vkResetFences(device.device(), 1, &inFlightFences[currentFrame]);
         if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
             VK_SUCCESS) {
-            throw std::runtime_error("failed to submit draw command buffer!");
+            throw std::runtime_error("Failed to Submit Draw Command Buffer!");
         }
 
         VkPresentInfoKHR presentInfo = {};
