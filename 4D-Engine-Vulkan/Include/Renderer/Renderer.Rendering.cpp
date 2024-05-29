@@ -32,6 +32,8 @@ namespace Engine4D {
     void rRendering::recreateSwapChain() {
         auto extent = window.getExtent();
         while (extent.width == 0 || extent.height == 0) {
+            if (glfwWindowShouldClose(window.getWindow()))
+                return;
             extent = window.getExtent();
             glfwWaitEvents();
         }
@@ -41,17 +43,19 @@ namespace Engine4D {
             swapChain = std::make_unique<rSwapChain>(device, extent);
         }
         else {
-            swapChain = std::make_unique<rSwapChain>(device, extent, std::move(swapChain));
-            if (swapChain->imageCount() != commandBuffers.size()) {
-                freeCommandBuffers();
-                createCommandBuffers();
-            }
+			std::shared_ptr<rSwapChain> oldSwapChain = std::move(swapChain);
+            swapChain = std::make_unique<rSwapChain>(device, extent, std::move(oldSwapChain));
+
+			if (!oldSwapChain->compareSwapFormats(*swapChain.get())) {
+				throw std::runtime_error("Swap Chain Image/Vulkan Format Mismatch!");
+			}
+
         }
 
     }
 
     void rRendering::createCommandBuffers() {
-        commandBuffers.resize(swapChain->imageCount());
+        commandBuffers.resize(rSwapChain::MAX_FRAMES_IN_FLIGHT);
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -78,7 +82,6 @@ namespace Engine4D {
     {
         assert(!isFrameStarted && "Can't Start New Frame While Previous Frame is in Progress!");
         auto result = swapChain->acquireNextImage(&currentImageIndex);
-
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             recreateSwapChain();
             return nullptr;
@@ -112,9 +115,7 @@ namespace Engine4D {
         }
 
         auto result = swapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
-		std::cout << "Result: " << result << std::endl;
-		std::cout << "VK_SUCCESS: " << VK_SUCCESS << std::endl;
-		std::cout << "window.wasWindowResized() = " << window.wasWindowResized() << std::endl;
+		
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
             window.wasWindowResized()) {
             window.resetWindowResizedFlag();
@@ -125,6 +126,7 @@ namespace Engine4D {
         }
 
 		isFrameStarted = false;
+		currentFrameIndex = (currentFrameIndex + 1) % rSwapChain::MAX_FRAMES_IN_FLIGHT;
     }
 
     void rRendering::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)

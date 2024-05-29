@@ -13,6 +13,18 @@ layout(push_constant) uniform u_values
 	vec4 u_cam;
 } push;
 
+struct Instruction
+{
+	int instructionType;
+	vec4 valueA;
+	vec4 valueB;
+};
+
+layout(set = 0, binding = 0) buffer InstructionsBuffer
+{
+	Instruction instructions_data[];
+};
+
  
 // Constants
 #define PI 3.1415925359
@@ -279,6 +291,22 @@ shape GetDist(vec4 p)
 	shape sph = hyperSphere((p / sphS) - vec4(0, 1, 0, 0), 1, vec4(0,0,1, alpha));
 	sph.dis *= max(sphS.x, max(sphS.y, max(sphS.z, sphS.w)));
 
+
+	vec4 tesP = p - vec4(0, 1, 0, 0);
+	vec4 tesS = vec4(1, 1, 1, 1);
+	vec4 tesC = vec4(1, 1, 1, 1);
+
+	int tesCI = 0;
+	float tesCD = abs(tesP.x) - (tesS.x / 2);
+	if (tesCD < abs(tesP.y) - (tesS.y/ 2)) { tesCD = abs(tesP.y) - (tesS.y/ 2); tesCI = 1; }
+	if (tesCD < abs(tesP.z) - (tesS.z/ 2)) { tesCD = abs(tesP.z) - (tesS.z/ 2); tesCI = 2; }
+
+	if (tesCI == 0) tesC = vec4(1, 0, 0, 1);
+	if (tesCI == 1) tesC = vec4(0, 1, 0, 1);
+	if (tesCI == 2) tesC = vec4(0, 0, 1, 1);
+
+	shape tes = tesseract(tesP, tesS, tesC);
+
 	vec4 _p = p;
 
 	shape core2 = hyperSphere(p - vec4(0, 1, 0, 0), 0.65, vec4(0.0f,1.f,0.0f,1));
@@ -306,7 +334,7 @@ shape GetDist(vec4 p)
 
 	//result = smoothUnionSDF(result, cyl, 0.5f);
 
-	shape result = sph;
+	shape result = tes;
 	//shape result = unionSdf(sph, tess);
 	result = unionSdf(result, tor);
 	result = unionSdf(result, tet);
@@ -319,6 +347,14 @@ shape GetDist(vec4 p)
 	//result = cubePrism(p - vec4(0,1,1,0), vec3(1,1,1), _dep, vec4(1.f, 1.f, 0.f, alpha));
 
 	//shape result = smoothUnionSDF(sph, core, 0.5);
+
+	if (instructions_data.length() > 0) {
+		vec4 _tesp = p;
+		_tesp -= instructions_data[2].valueA;
+		_tesp = rotate4D(_tesp, vec4(0),  -1 * instructions_data[1].valueA.x, ZW);
+		_tesp = rotate4D(_tesp, vec4(0), -1 * instructions_data[1].valueA.y, XY);
+		result = tesseract(_tesp, instructions_data[0].valueA, vec4(0.5f, 0.5f, 0.7f, 1));
+	}
 
 	shapes[2] = result;
 

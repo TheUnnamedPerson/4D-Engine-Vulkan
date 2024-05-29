@@ -34,6 +34,7 @@ int main() {
 
     Engine4D::rManager app = Engine4D::rManager(engine_Update, engine_Late_Update, &Time);
 
+	engine.Time = &Time;
 	engine.renderer = &app;
 
     try {
@@ -49,6 +50,9 @@ int main() {
 		rend->material.color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
 		rend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+
+        Engine4D::RigidBody* rb = engine.root->GetChild(0)->AddComponent<Engine4D::RigidBody>();
+		rb->rotationalVelocity = Engine4D::Vector4(0.75f, 1.0f, 0.0f, 0.0f);
 
         engine.UpdateInstructions();
 

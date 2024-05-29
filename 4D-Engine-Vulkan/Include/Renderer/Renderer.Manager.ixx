@@ -20,6 +20,8 @@ import Engine4D.Renderer.Model;
 import Engine4D.Renderer.Pipeline;
 import Engine4D.Renderer.Window;
 import Engine4D.Renderer.Buffer;
+import Engine4D.Renderer.System;
+import Engine4D.Renderer.Descriptors;
 
 
 import Engine4D.Structs;
@@ -32,21 +34,16 @@ namespace Engine4D {
 		void (*main_Update)();
 		void (*main_Late_Update)();
 
-		void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
 		static constexpr int WIDTH = 800;
 		static constexpr int HEIGHT = 600;
 
-		static constexpr int MAX_FPS = 30;
+		static constexpr int MAX_FPS = 60;
 
 		TimeClass* Time;
 
 		std::vector<Instruction>* instructions;
 
 		uint32_t frameIndex = 0;
-
-		double lastUpdatedTime;
-		double lastFrameTime;
 
 		rManager();
 		rManager(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time);
@@ -55,21 +52,20 @@ namespace Engine4D {
 		rManager(const rManager&) = delete;
 		rManager& operator=(const rManager&) = delete;
 
+		void cameraControls();
+
 		void run();
 
 		private:
 		void loadModels();
-		void createPipelineLayout();
-		void createPipeline();
-
-		void doModelStuff(VkCommandBuffer commandBuffer);
 
 		rWindow window{ WIDTH, HEIGHT, "Engine4D" };
 		rDevice device{ window };
 		rRendering renderer = rRendering(window, device);
-		std::unique_ptr<rPipeline> pipeline;
-		VkPipelineLayout pipelineLayout;
 		std::unique_ptr<rModel> model;
+
+		std::unique_ptr<rDescriptorPool> globalDescriptorPool{};
+
 
 		float rotation = 0.0f;
 		glm::vec4 cameraPosition = { 0.0f, 0.0f, 2.0f, 1.0f };

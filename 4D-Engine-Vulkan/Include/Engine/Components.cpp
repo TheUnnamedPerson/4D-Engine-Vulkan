@@ -3,6 +3,10 @@ module;
 #include <vector>
 #include <string>
 
+#include <iostream>
+
+#include <glm/glm.hpp>
+
 module Engine4D.Components;
 
 namespace Engine4D
@@ -142,5 +146,34 @@ namespace Engine4D
 			}
 		}
 		return instructions;
+	}
+
+	RigidBody::RigidBody(GameObject* gameObject) : MonoBehavior(gameObject)
+	{
+		this->gravity = Vector4(0, -9.8f, 0, 0);
+	}
+
+	void RigidBody::Update()
+	{
+		//std::cout << "RigidBody Update" << std::endl;
+
+		velocity += gravity * gameObject->engine->Time->deltaTime;
+		transform->position += velocity * gameObject->engine->Time->deltaTime;
+		transform->rotation += rotationalVelocity * gameObject->engine->Time->deltaTime;
+
+		if (transform->position.y < -0.5)
+		{
+			transform->position.y = 20;
+			velocity.y = 0;
+		}
+
+		gameObject->engine->sceneChanged = true;
+
+		countdowntime += gameObject->engine->Time->deltaTime;
+	}
+
+	std::string RigidBody::toString()
+	{
+		return "RigidBody";
 	}
 }

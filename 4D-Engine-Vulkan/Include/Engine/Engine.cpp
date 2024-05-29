@@ -4,6 +4,8 @@ module;
 #include <vector>
 #include <type_traits>
 
+#include <iostream>
+
 module Engine4D.Engine;
 
 import Engine4D.Components;
@@ -46,21 +48,23 @@ namespace Engine4D
 
 	GameObject::~GameObject()
 	{
-		for (Component* component : components)
+		for (int i = 0; i < components.size(); i++)
 		{
-			delete component;
+			if (components[i] != nullptr) delete components[i];
 		}
-		for (GameObject* child : children)
+		components.clear();
+		for (int i = 0; i < children.size(); i++)
 		{
-			delete child;
+			if (children[i] != nullptr) delete children[i];
 		}
+		children.clear();
 	}
 
 	GameObject* GameObject::AddChild()
 	{
 		GameObject* child = new GameObject(engine);
 		children.push_back(child);
-		engine->AddGameObject(child);
+		engine->AddGameObject(&children[children.size() - 1]);
 		return child;
 	}
 
@@ -127,17 +131,15 @@ namespace Engine4D
 
 	Engine::Engine()
 	{
-		this->gameObjects = std::vector<GameObject*>();
-		gameObjects.push_back(new GameObject(this));
-		this->root = gameObjects[0];
+		this->gameObjects = std::vector<GameObject**>();
+		this->root = new GameObject(this);
+		gameObjects.push_back(&this->root);
 	}
 
 	Engine::~Engine()
 	{
-		for (GameObject* gameObject : gameObjects)
-		{
-			delete gameObject;
-		}
+		delete root;
+		gameObjects.clear();
 		instructions.clear();
 	}
 
@@ -150,9 +152,9 @@ namespace Engine4D
 	{
 		instructions.clear();
 		instructions = std::vector<Instruction>();
-		for (GameObject* gameObject : gameObjects)
+		for (GameObject** gameObject : gameObjects)
 		{
-			for (Component* component : gameObject->components)
+			for (Component* component : (*gameObject)->components)
 			{
 				if (dynamic_cast<MeshRenderer*>(component) != nullptr)
 				{
@@ -186,7 +188,7 @@ namespace Engine4D
 		}
 	}
 
-	void Engine::AddGameObject(GameObject* gameObject)
+	void Engine::AddGameObject(GameObject** gameObject)
 	{
 		gameObjects.push_back(gameObject);
 	}

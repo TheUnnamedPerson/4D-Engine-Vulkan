@@ -55,4 +55,21 @@ namespace Engine4D
 			std::string toString() override;
 
 	};
+
+	export class RigidBody : public MonoBehavior
+	{
+		public:
+		Vector4 gravity;
+		Vector4 velocity;
+		Vector4 rotationalVelocity;
+
+		float countdowntime = 0.0f;
+
+		RigidBody() = delete;
+		RigidBody(GameObject* gameObject);
+
+		void Update() override;
+
+		std::string toString() override;
+	};
 }

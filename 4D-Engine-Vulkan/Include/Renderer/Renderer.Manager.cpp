@@ -10,6 +10,8 @@ module;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include <chrono>
+
 #include <array>
 #include <cassert>
 #include <stdexcept>
@@ -26,41 +28,33 @@ namespace Engine4D {
         alignas(16) glm::mat4 model;
         alignas(16) glm::mat4 view;
         alignas(16) glm::mat4 proj;
-    };*/
-
-    struct UniformBufferObject {
-		std::vector<Instruction> instructions;
-    };    
+    };*/  
 
 	struct Scene {
-		std::vector<Instruction> instructions;
-	};
-
-	struct PushConstantObject {
-		alignas(8) glm::vec2 resolution;
-		alignas(4) float time;
-        alignas(4) float rot;
-		alignas(16) glm::vec4 cameraPosition;
+		Instruction instructions[];
 	};
 
     rManager::rManager() {
+		globalDescriptorPool = rDescriptorPool::Builder(device)
+			.setMaxSets(rSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, rSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.build();
         loadModels();
-        createPipelineLayout();
-        createPipeline();
     }
 
     rManager::rManager(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time) {
-
+        globalDescriptorPool = rDescriptorPool::Builder(device)
+            .setMaxSets(rSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, rSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .build();
 		main_Update = _main_Update;
 		main_Late_Update = _main_Late_Update;
 		Time = time;
 
         loadModels();
-        createPipelineLayout();
-        createPipeline();
     }
 
-    rManager::~rManager() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
+    rManager::~rManager() { }
 
 	std::string vec4ToString(glm::vec4 vec) {
 		return std::to_string(vec.x) + " " + std::to_string(vec.y) + " " + std::to_string(vec.z) + " " + std::to_string(vec.w);
@@ -75,107 +69,151 @@ namespace Engine4D {
     constexpr float MoveMultiplierZ = 2.0f;
     constexpr float MoveMultiplierW = 0.6f;
 
+    constexpr int MAX_INSTRUCTIONS = 10000;
+
+    void rManager::cameraControls()
+    {
+        float shiftMult = 1;
+
+        int stateShift = glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_SHIFT);
+        if (stateShift == GLFW_PRESS)
+            shiftMult += 1.0f;
+        int stateControl = glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_CONTROL);
+        if (stateControl == GLFW_PRESS)
+            shiftMult -= 0.75f;
+
+        int stateE = glfwGetKey(window.getWindow(), GLFW_KEY_E);
+        if (stateE == GLFW_PRESS)
+            rotation += RotateMultiplier * shiftMult * Time->deltaTime;
+        int stateQ = glfwGetKey(window.getWindow(), GLFW_KEY_Q);
+        if (stateQ == GLFW_PRESS)
+            rotation -= RotateMultiplier * shiftMult * Time->deltaTime;
+        rotation = fmod(rotation, 6.28318530718f);
+
+        glm::vec4 nextCamPos = glm::vec4(0, 0, 0, 0);
+
+        int stateW = glfwGetKey(window.getWindow(), GLFW_KEY_W);
+        if (stateW == GLFW_PRESS)
+            nextCamPos.z += MoveMultiplierZ * shiftMult * speed * Time->deltaTime;
+        int stateS = glfwGetKey(window.getWindow(), GLFW_KEY_S);
+        if (stateS == GLFW_PRESS)
+            nextCamPos.z -= MoveMultiplierZ * shiftMult * speed * Time->deltaTime;
+
+        int stateA = glfwGetKey(window.getWindow(), GLFW_KEY_A);
+        if (stateA == GLFW_PRESS)
+            nextCamPos.x -= MoveMultiplierX * shiftMult * speed * Time->deltaTime;
+        int stateD = glfwGetKey(window.getWindow(), GLFW_KEY_D);
+        if (stateD == GLFW_PRESS)
+            nextCamPos.x += MoveMultiplierX * shiftMult * speed * Time->deltaTime;
+
+        int stateX = glfwGetKey(window.getWindow(), GLFW_KEY_X);
+        if (stateX == GLFW_PRESS)
+            nextCamPos.y += MoveMultiplierY * shiftMult * speed * Time->deltaTime;
+        int stateZ = glfwGetKey(window.getWindow(), GLFW_KEY_Z);
+        if (stateZ == GLFW_PRESS)
+            nextCamPos.y -= MoveMultiplierY * shiftMult * speed * Time->deltaTime;
+
+        glm::mat4 camRot = glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, -1.0f, 0.0f));
+
+        //std::cout << glm::to_string(camRot) << std::endl;
+
+        nextCamPos = camRot * nextCamPos;
+
+        int stateT = glfwGetKey(window.getWindow(), GLFW_KEY_T);
+        if (stateT == GLFW_PRESS)
+            nextCamPos.w += MoveMultiplierW * shiftMult * speed * Time->deltaTime;
+        int stateG = glfwGetKey(window.getWindow(), GLFW_KEY_G);
+        if (stateG == GLFW_PRESS)
+            nextCamPos.w -= MoveMultiplierW * shiftMult * speed * Time->deltaTime;
+
+        cameraPosition += nextCamPos;
+
+        //std::cout << vec4ToString(cameraPosition) << " ; " << vec4ToString(nextCamPos) << " ; " << rotation << std::endl;    
+    }
+
     void rManager::run() {
 
-		rBuffer globalBuffer(
-            device,
-            sizeof(UniformBufferObject),
-            rSwapChain::MAX_FRAMES_IN_FLIGHT,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-            device.properties.limits.minUniformBufferOffsetAlignment
-        );
-		globalBuffer.map();
+		std::vector<std::unique_ptr<rBuffer>> storageBuffers(rSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < rSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+            storageBuffers[i] = std::make_unique<rBuffer>(
+				device,
+				sizeof(Instruction),
+                MAX_INSTRUCTIONS,
+				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+				device.properties.limits.minStorageBufferOffsetAlignment
+			);
+            storageBuffers[i]->map();
+		}
 
+		auto globalSetLayout = rDescriptorSetLayout::Builder(device)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.build();
 
-        float timePassed = 0.0f;
+		std::vector<VkDescriptorSet> globalDescriptorSets(rSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < globalDescriptorSets.size(); i++) {
+			auto bufferInfo = storageBuffers[i]->descriptorInfo();
+			rDescriptorWriter(*globalSetLayout, *globalDescriptorPool)
+                .writeBuffer(0, &bufferInfo)
+				.build(globalDescriptorSets[i]);
+
+		}
+
+		rSystem system(device, model, renderer, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout());
+
+		float timePassed = 0.0f;
+
+        auto lastUpdatedTime = Time->now();
+        auto lastFrameTime = Time->now();
+
         while (!window.shouldClose()) {
 
-            double currentTime = glfwGetTime();
-            double deltaTime = currentTime - lastUpdatedTime;
+            auto currentTime = Time->now(); //glfwGetTime();
+            double deltaTime = Time->toSeconds(currentTime - lastUpdatedTime);
 
             glfwPollEvents();
 
-			float shiftMult = 1;
-
-            int stateShift = glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_SHIFT);
-            if (stateShift == GLFW_PRESS)
-                shiftMult += 1.0f;
-            int stateControl = glfwGetKey(window.getWindow(), GLFW_KEY_LEFT_CONTROL);
-            if (stateControl == GLFW_PRESS)
-                shiftMult -= 0.75f;
-
-            int stateE = glfwGetKey(window.getWindow(), GLFW_KEY_E);
-            if (stateE == GLFW_PRESS)
-                rotation += RotateMultiplier * shiftMult * deltaTime;
-            int stateQ = glfwGetKey(window.getWindow(), GLFW_KEY_Q);
-            if (stateQ == GLFW_PRESS)
-                rotation -= RotateMultiplier * shiftMult * deltaTime;
-            rotation = fmod(rotation, 6.28318530718f);
-
-            glm::vec4 nextCamPos = glm::vec4(0, 0, 0, 0);
-
-            int stateW = glfwGetKey(window.getWindow(), GLFW_KEY_W);
-            if (stateW == GLFW_PRESS)
-                nextCamPos.z += MoveMultiplierZ * shiftMult * speed * deltaTime;
-            int stateS = glfwGetKey(window.getWindow(), GLFW_KEY_S);
-            if (stateS == GLFW_PRESS)
-                nextCamPos.z -= MoveMultiplierZ * shiftMult * speed * deltaTime;
-
-            int stateA = glfwGetKey(window.getWindow(), GLFW_KEY_A);
-            if (stateA == GLFW_PRESS)
-                nextCamPos.x -= MoveMultiplierX * shiftMult * speed * deltaTime;
-            int stateD = glfwGetKey(window.getWindow(), GLFW_KEY_D);
-            if (stateD == GLFW_PRESS)
-                nextCamPos.x += MoveMultiplierX * shiftMult * speed * deltaTime;
-
-            int stateX = glfwGetKey(window.getWindow(), GLFW_KEY_X);
-            if (stateX == GLFW_PRESS)
-                nextCamPos.y += MoveMultiplierY * shiftMult * speed * deltaTime;
-            int stateZ = glfwGetKey(window.getWindow(), GLFW_KEY_Z);
-            if (stateZ == GLFW_PRESS)
-                nextCamPos.y -= MoveMultiplierY * shiftMult * speed * deltaTime;
-
-            glm::mat4 camRot = glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, -1.0f, 0.0f));
-
-            //std::cout << glm::to_string(camRot) << std::endl;
-
-            nextCamPos = camRot * nextCamPos;
-
-            int stateT = glfwGetKey(window.getWindow(), GLFW_KEY_T);
-            if (stateT == GLFW_PRESS)
-                nextCamPos.w += MoveMultiplierW * shiftMult * speed * deltaTime;
-            int stateG = glfwGetKey(window.getWindow(), GLFW_KEY_G);
-            if (stateG == GLFW_PRESS)
-                nextCamPos.w -= MoveMultiplierW * shiftMult * speed * deltaTime;
-
-            cameraPosition += nextCamPos;
-
-            //std::cout << vec4ToString(cameraPosition) << " ; " << vec4ToString(nextCamPos) << " ; " << rotation << std::endl;            
-
-            if (currentTime - lastFrameTime >= 1.0 / MAX_FPS) {
+            if (Time->toSeconds(currentTime - lastFrameTime) >= 1.0 / MAX_FPS) {
 
                 if (auto commandbuffer = renderer.beginFrame()) {
+
                     Time->deltaTime = deltaTime;
+                    cameraControls();
                     main_Update();
-                    deltaTime = currentTime - lastUpdatedTime;
+                    deltaTime = Time->toSeconds(currentTime - lastUpdatedTime);
                     Time->deltaTime = deltaTime;
                     main_Late_Update();
 
-                    renderer.beginSwapChainRenderPass(commandbuffer);
+					int frameIndex = renderer.getFrameIndex();
+					FrameInfo frameInfo{
+                        frameIndex,
+                        commandbuffer,
+						CameraInfo{rotation, cameraPosition},
+						globalDescriptorSets[frameIndex]
+                    };
+                    
+                    //Scene scene{};
 
-                    doModelStuff(commandbuffer);
+					//scene.instructions = *instructions;
+                    storageBuffers[frameIndex]->writeToBuffer(instructions->data());
+                    //storageBuffers[frameIndex]->writeToBuffer(&scene);
+					storageBuffers[frameIndex]->flush();
+
+                    
+
+                    renderer.beginSwapChainRenderPass(commandbuffer);
+					system.renderObjects(frameInfo);
 
                     renderer.endSwapChainRenderPass(commandbuffer);
                     renderer.endFrame();
 
                     lastFrameTime = currentTime;
+
+                    timePassed += deltaTime;
+
+                    lastUpdatedTime = currentTime;
                 }
             }
-
-            timePassed += deltaTime;
-
-            lastUpdatedTime = currentTime;
 
         }
 
@@ -192,55 +230,6 @@ namespace Engine4D {
             {{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
             {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}} };		
         model = std::make_unique<rModel>(device, modelBuilder);
-    }
-
-    void rManager::createPipelineLayout() {
-
-		VkPushConstantRange pushConstantRange{};
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(PushConstantObject);
-
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pSetLayouts = nullptr;
-        pipelineLayoutInfo.pushConstantRangeCount = 1;
-        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) !=
-            VK_SUCCESS) {
-            throw std::runtime_error("Failed to Create Pipeline Layout!");
-        }
-    }
-
-    void rManager::createPipeline() {
-        assert(pipelineLayout != nullptr && "Cannot Create Pipeline before Pipeline Layout");
-
-        PipelineConfigInfo pipelineConfig{};
-        rPipeline::defaultPipelineConfigInfo(pipelineConfig);
-        pipelineConfig.renderPass = renderer.getSwapChainRenderPass();
-        pipelineConfig.pipelineLayout = pipelineLayout;
-        pipeline = std::make_unique<rPipeline>(
-            device,
-            "shaders/simple_shader.vert.spv",
-            "shaders/simple_shader.frag.spv",
-            pipelineConfig);
-    }
-
-    void rManager::doModelStuff(VkCommandBuffer commandBuffer) {
-
-        pipeline->bind(commandBuffer);
-        model->bind(commandBuffer);
-
-		PushConstantObject push{};
-		push.resolution = glm::vec2(renderer.getSwapChainExtent().width, renderer.getSwapChainExtent().height);
-		push.time = static_cast<float>(glfwGetTime());
-		push.rot = rotation;
-		push.cameraPosition = cameraPosition;
-
-		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantObject), &push);
-
-        model->draw(commandBuffer);
     }
 
 }

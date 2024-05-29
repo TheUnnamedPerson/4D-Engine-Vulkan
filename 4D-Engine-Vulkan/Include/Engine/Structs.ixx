@@ -1,6 +1,9 @@
 module;
 
-import <glm/glm.hpp>;
+#include <glm/glm.hpp>;
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 export module Engine4D.Structs;
 
@@ -24,5 +27,17 @@ namespace Engine4D
         alignas(4) uint32_t type;
         alignas(16) glm::vec4 valueA;
         alignas(16) glm::vec4 valueB;
+    };
+
+    export struct CameraInfo {
+        float rotation;
+        glm::vec4 cameraPosition;
+    };
+
+    export struct FrameInfo {
+		int frameIndex;
+		VkCommandBuffer commandBuffer;
+		CameraInfo cameraInfo;
+		VkDescriptorSet globalDescriptorSet;
     };
 }

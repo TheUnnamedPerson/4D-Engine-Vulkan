@@ -125,8 +125,9 @@ namespace Engine4D {
 					Engine& operator=(Engine&&) = delete;*/
 
 		rManager* renderer;
+		TimeClass* Time;
 
-		std::vector<GameObject*> gameObjects;
+		std::vector<GameObject**> gameObjects;
 		GameObject* root;
 
 		bool sceneChanged = false;
@@ -140,7 +141,7 @@ namespace Engine4D {
 		void FixedUpdate();
 		void LateUpdate();
 
-		void AddGameObject(GameObject* gameObject);
+		void AddGameObject(GameObject** gameObject);
 	};
 
 
