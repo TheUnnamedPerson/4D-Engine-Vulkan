@@ -43,6 +43,8 @@ namespace Engine4D {
 
 		std::vector<Instruction>* instructions;
 
+		uint32_t frameIndex = 0;
+
 		double lastUpdatedTime;
 		double lastFrameTime;
 

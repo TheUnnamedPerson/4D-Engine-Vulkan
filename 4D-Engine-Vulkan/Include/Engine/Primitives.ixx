@@ -106,6 +106,7 @@ namespace Engine4D {
 		public:
 		float x, y, z, w;
 		Vector4();
+		Vector4(glm::vec4 vec);
 		Vector4(float x, float y, float z, float w);
 		Vector4(Vector2 xy, float z, float w);
 		Vector4(float x, Vector2 yz, float w);

@@ -3,11 +3,10 @@ module;
 #include <string>
 #include <vector>
 #include <type_traits>
-#include <stdexcept>
-
-import Engine4D.Components;
 
 module Engine4D.Engine;
+
+import Engine4D.Components;
 
 namespace Engine4D
 {
@@ -20,9 +19,9 @@ namespace Engine4D
 	Transform::Transform(GameObject* gameObject)
 	{
 		this->gameObject = gameObject;
-		this->position = Vector4();
-		this->rotation = Vector4();
-		this->scale = Vector4();
+		this->position = Vector4(0);
+		this->rotation = Vector4(0);
+		this->scale = Vector4(1);
 	}
 
 	Transform::Transform(Vector4 position, Vector4 rotation, Vector4 scale, GameObject* gameObject)
@@ -31,6 +30,11 @@ namespace Engine4D
 		this->position = position;
 		this->rotation = rotation;
 		this->scale = scale;
+	}
+
+	std::string Transform::toString()
+	{
+		return "Transform";
 	}
 
 	GameObject::GameObject(Engine* _engine)
@@ -51,20 +55,6 @@ namespace Engine4D
 			delete child;
 		}
 	}
-	
-	template<typename T>
-	T* GameObject::AddComponent()
-	{
-		if (std::is_base_of<Component, T>::value)
-		{
-			components.push_back(new T(this));
-			return (T*)components[components.size() - 1];
-		}
-		else
-		{
-			throw std::invalid_argument("T must be a subclass of Component");
-		}
-	}
 
 	GameObject* GameObject::AddChild()
 	{
@@ -83,32 +73,6 @@ namespace Engine4D
 	GameObject* GameObject::GetChild(int index)
 	{
 		return children[index];
-	}
-
-	template<typename T>
-	T GameObject::GetComponent()
-	{
-		for (Component component : components)
-		{
-			if (T* t = dynamic_cast<T*>(&component))
-			{
-				return *t;
-			}
-		}
-	}
-
-	template<typename T>
-	std::vector<T> GameObject::GetComponents()
-	{
-		std::vector<T> result;
-		for (Component component : components)
-		{
-			if (T* t = dynamic_cast<T*>(&component))
-			{
-				result.push_back(*t);
-			}
-		}
-		return result;
 	}
 
 	void GameObject::Update()

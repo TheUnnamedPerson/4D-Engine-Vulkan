@@ -1,9 +1,9 @@
 
-
 import Engine4D.Renderer;
 import Engine4D.Engine;
 import Engine4D.Time;
 import Engine4D.Components;
+import Engine4D.Primitives;
 
 #include <iostream>
 #include <exception>
@@ -42,11 +42,25 @@ int main() {
 
         engine.root->AddChild();
 
+        std::cout << engine.root->GetChild(0)->transform.toString() << std::endl;
+
 		Engine4D::MeshRenderer* rend = engine.root->GetChild(0)->AddComponent<Engine4D::MeshRenderer>();
 		rend->AddShape(new Engine4D::HyperSphere());
 		rend->material.color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
 		rend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+
+        engine.UpdateInstructions();
+
+		std::cout << "Instructions: " << engine.instructions.size() << std::endl;
+
+		for (int i = 0; i < engine.instructions.size(); i++)
+        {
+			std::cout << "Instruction: " << i << std::endl;
+			std::cout << "\tType: " << engine.instructions[i].type << std::endl;
+			std::cout << "\tValue A: " << Engine4D::Vector4(engine.instructions[i].valueA) << std::endl;
+            std::cout << "\tValue A: " << Engine4D::Vector4(engine.instructions[i].valueB) << std::endl;
+		}
 
         app.run(); //vertices, indices);
         

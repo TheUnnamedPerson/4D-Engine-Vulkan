@@ -152,7 +152,7 @@ namespace Engine4D {
 
 			cameraPosition += nextCamPos;
 
-            std::cout << vec4ToString(cameraPosition) << " ; " << vec4ToString(nextCamPos) << " ; " << rotation << std::endl;            
+            //std::cout << vec4ToString(cameraPosition) << " ; " << vec4ToString(nextCamPos) << " ; " << rotation << std::endl;            
 
             if (currentTime - lastFrameTime >= 1.0 / MAX_FPS) {
                 Time->deltaTime = deltaTime;
@@ -160,6 +160,8 @@ namespace Engine4D {
                 deltaTime = currentTime - lastUpdatedTime;
 				Time->deltaTime = deltaTime;
 				main_Late_Update();
+
+                
 
                 drawFrame();
                 lastFrameTime = currentTime;
@@ -435,6 +437,7 @@ namespace Engine4D {
     void rRenderer::drawFrame() {
         uint32_t imageIndex;
         auto result = swapChain->acquireNextImage(&imageIndex);
+		frameIndex = imageIndex;
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             recreateSwapChain();

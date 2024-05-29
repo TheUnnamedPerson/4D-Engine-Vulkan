@@ -3,6 +3,7 @@ module;
 #include <string>
 #include <vector>
 #include <type_traits>
+#include <stdexcept>
 #include <string>
 
 export module Engine4D.Engine;
@@ -31,6 +32,8 @@ namespace Engine4D {
 			Transform() = delete;
 			Transform(GameObject* gameObject);
 			Transform(Vector4 position, Vector4 rotation, Vector4 scale, GameObject* gameObject);
+
+			std::string toString();
 	};
 
 	class GameObject {
@@ -139,5 +142,47 @@ namespace Engine4D {
 
 		void AddGameObject(GameObject* gameObject);
 	};
+
+
+	template<typename T>
+	T* GameObject::AddComponent()
+	{
+		if (std::is_base_of<Component, T>::value)
+		{
+			components.push_back(new T(this));
+			return (T*)components[components.size() - 1];
+		}
+		else
+		{
+			throw std::invalid_argument("T must be a subclass of Component");
+			return nullptr;
+		}
+	}
+
+	template<typename T>
+	T GameObject::GetComponent()
+	{
+		for (Component component : components)
+		{
+			if (T* t = dynamic_cast<T*>(&component))
+			{
+				return *t;
+			}
+		}
+	}
+
+	template<typename T>
+	std::vector<T> GameObject::GetComponents()
+	{
+		std::vector<T> result;
+		for (Component component : components)
+		{
+			if (T* t = dynamic_cast<T*>(&component))
+			{
+				result.push_back(*t);
+			}
+		}
+		return result;
+	}
 
 }

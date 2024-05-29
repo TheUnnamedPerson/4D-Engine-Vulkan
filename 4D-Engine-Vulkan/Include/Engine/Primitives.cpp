@@ -2,6 +2,7 @@ module;
 
 #include <iostream>
 #include <cmath>
+#include <glm/glm.hpp>
 
 module Engine4D.Primitives;
 
@@ -332,6 +333,8 @@ namespace Engine4D
 
 	Vector4::Vector4() : x(0), y(0), z(0), w(0) {}
 
+	Vector4::Vector4(glm::vec4 vec) : x(vec.x), y(vec.y), z(vec.z), w(vec.w) {}
+
 	Vector4::Vector4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
 	Vector4::Vector4(Vector2 xy, float z, float w) : x(xy.x), y(xy.y), z(z), w(w) {}
@@ -546,9 +549,9 @@ namespace Engine4D
 	Shape::Shape ()
 	{
 		this->shapeType = 0;
-		this->position = Vector4();
-		this->rotation = Vector4();
-		this->scale = Vector4();
+		this->position = Vector4(0);
+		this->rotation = Vector4(0);
+		this->scale = Vector4(1);
 	}
 
 	Shape::Shape (Vector4 position, Vector4 rotation, Vector4 scale)
