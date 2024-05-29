@@ -12,7 +12,7 @@ module;
 #include <memory>
 #include <vector>
 
-export module Engine4D.Renderer;
+export module Engine4D.Renderer.Manager;
 
 
 import Engine4D.Renderer.SwapChain;
@@ -27,7 +27,7 @@ import Engine4D.Structs;
 import Engine4D.Time;
 
 namespace Engine4D {
-	export class rRenderer {
+	export class rManager {
 		public:
 		void (*main_Update)();
 		void (*main_Late_Update)();
@@ -48,12 +48,12 @@ namespace Engine4D {
 		double lastUpdatedTime;
 		double lastFrameTime;
 
-		rRenderer();
-		rRenderer(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time);
-		~rRenderer();
+		rManager();
+		rManager(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time);
+		~rManager();
 
-		rRenderer(const rRenderer&) = delete;
-		rRenderer& operator=(const rRenderer&) = delete;
+		rManager(const rManager&) = delete;
+		rManager& operator=(const rManager&) = delete;
 
 		void run();
 

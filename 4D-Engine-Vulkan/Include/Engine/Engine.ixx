@@ -12,7 +12,7 @@ import Engine4D.Primitives;
 import Engine4D.Time;
 import Engine4D.Structs;
 
-import Engine4D.Renderer;
+import Engine4D.Renderer.Manager;
 
 namespace Engine4D {
 
@@ -124,7 +124,7 @@ namespace Engine4D {
 		/*Engine(Engine&&) = delete;
 					Engine& operator=(Engine&&) = delete;*/
 
-		rRenderer* renderer;
+		rManager* renderer;
 
 		std::vector<GameObject*> gameObjects;
 		GameObject* root;

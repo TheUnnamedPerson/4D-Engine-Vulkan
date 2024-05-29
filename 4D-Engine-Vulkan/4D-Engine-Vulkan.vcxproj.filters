@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Include\Renderer\Renderer.ixx">
+    <ClCompile Include="Include\Renderer\Renderer.Manager.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="Include\Renderer\Renderer.Window.ixx">
@@ -33,7 +33,7 @@
     <ClCompile Include="Include\Renderer\Renderer.Pipeline.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Include\Renderer\Renderer.cpp">
+    <ClCompile Include="Include\Renderer\Renderer.Manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Include\Renderer\Renderer.Device.cpp">

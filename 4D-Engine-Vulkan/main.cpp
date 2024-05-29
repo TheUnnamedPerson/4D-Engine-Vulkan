@@ -1,5 +1,5 @@
 
-import Engine4D.Renderer;
+import Engine4D.Renderer.Manager;
 import Engine4D.Engine;
 import Engine4D.Time;
 import Engine4D.Components;
@@ -32,7 +32,7 @@ void engine_Late_Update()
 int main() {
 	VLDEnable();
 
-    Engine4D::rRenderer app = Engine4D::rRenderer(engine_Update, engine_Late_Update, &Time);
+    Engine4D::rManager app = Engine4D::rManager(engine_Update, engine_Late_Update, &Time);
 
 	engine.renderer = &app;
 

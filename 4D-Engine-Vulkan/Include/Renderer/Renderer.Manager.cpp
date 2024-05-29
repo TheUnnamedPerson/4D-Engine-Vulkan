@@ -18,7 +18,7 @@ module;
 
 #include <iostream>
 
-module Engine4D.Renderer;
+module Engine4D.Renderer.Manager;
 
 namespace Engine4D {
 
@@ -43,7 +43,7 @@ namespace Engine4D {
 		alignas(16) glm::vec4 cameraPosition;
 	};
 
-    rRenderer::rRenderer() {
+    rManager::rManager() {
         loadModels();
 		createDescriptorSetLayout();
         createPipelineLayout();
@@ -51,7 +51,7 @@ namespace Engine4D {
         createCommandBuffers();
     }
 
-    rRenderer::rRenderer(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time) {
+    rManager::rManager(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time) {
 
 		main_Update = _main_Update;
 		main_Late_Update = _main_Late_Update;
@@ -64,19 +64,22 @@ namespace Engine4D {
         createCommandBuffers();
     }
 
-    rRenderer::~rRenderer() { vkDestroyDescriptorSetLayout(device.device(), descriptorSetLayout, nullptr); vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
+    rManager::~rManager() { vkDestroyDescriptorSetLayout(device.device(), descriptorSetLayout, nullptr); vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
 	std::string vec4ToString(glm::vec4 vec) {
 		return std::to_string(vec.x) + " " + std::to_string(vec.y) + " " + std::to_string(vec.z) + " " + std::to_string(vec.w);
 	}
 
-	constexpr float RotateMultiplier = -0.001f;
-    constexpr float MoveMultiplierX = 0.002f;
-    constexpr float MoveMultiplierY = 0.002f;
-    constexpr float MoveMultiplierZ = 0.002f;
-    constexpr float MoveMultiplierW = 0.0006f;
+	constexpr float RotateMultiplier = -2.0f;
 
-    void rRenderer::run() {
+    constexpr float speed = 4.0f;
+
+    constexpr float MoveMultiplierX = 2.0f;
+    constexpr float MoveMultiplierY = 2.0f;
+    constexpr float MoveMultiplierZ = 2.0f;
+    constexpr float MoveMultiplierW = 0.6f;
+
+    void rManager::run() {
 
 		rBuffer globalBuffer(
             device,
@@ -108,34 +111,34 @@ namespace Engine4D {
 
             int stateE = glfwGetKey(window.getWindow(), GLFW_KEY_E);
             if (stateE == GLFW_PRESS)
-                rotation += RotateMultiplier * shiftMult;
+                rotation += RotateMultiplier * shiftMult * deltaTime;
             int stateQ = glfwGetKey(window.getWindow(), GLFW_KEY_Q);
             if (stateQ == GLFW_PRESS)
-                rotation -= RotateMultiplier * shiftMult;
+                rotation -= RotateMultiplier * shiftMult * deltaTime;
             rotation = fmod(rotation, 6.28318530718f);
 
             glm::vec4 nextCamPos = glm::vec4(0,0,0,0);
 
             int stateW = glfwGetKey(window.getWindow(), GLFW_KEY_W);
             if (stateW == GLFW_PRESS)
-                nextCamPos.z += MoveMultiplierZ * shiftMult;
+                nextCamPos.z += MoveMultiplierZ * shiftMult * speed * deltaTime;
             int stateS = glfwGetKey(window.getWindow(), GLFW_KEY_S);
             if (stateS == GLFW_PRESS)
-                nextCamPos.z -= MoveMultiplierZ * shiftMult;
+                nextCamPos.z -= MoveMultiplierZ * shiftMult * speed * deltaTime;
 
             int stateA = glfwGetKey(window.getWindow(), GLFW_KEY_A);
             if (stateA == GLFW_PRESS)
-                nextCamPos.x -= MoveMultiplierX * shiftMult;
+                nextCamPos.x -= MoveMultiplierX * shiftMult * speed * deltaTime;
             int stateD = glfwGetKey(window.getWindow(), GLFW_KEY_D);
             if (stateD == GLFW_PRESS)
-                nextCamPos.x += MoveMultiplierX * shiftMult;
+                nextCamPos.x += MoveMultiplierX * shiftMult * speed * deltaTime;
 
             int stateX = glfwGetKey(window.getWindow(), GLFW_KEY_X);
             if (stateX == GLFW_PRESS)
-                nextCamPos.y += MoveMultiplierY * shiftMult;
+                nextCamPos.y += MoveMultiplierY * shiftMult * speed * deltaTime;
             int stateZ = glfwGetKey(window.getWindow(), GLFW_KEY_Z);
             if (stateZ == GLFW_PRESS)
-                nextCamPos.y -= MoveMultiplierY * shiftMult;
+                nextCamPos.y -= MoveMultiplierY * shiftMult * speed * deltaTime;
 
             glm::mat4 camRot = glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0.0f, -1.0f, 0.0f));
 
@@ -145,10 +148,10 @@ namespace Engine4D {
 
             int stateT = glfwGetKey(window.getWindow(), GLFW_KEY_T);
             if (stateT == GLFW_PRESS)
-                nextCamPos.w += MoveMultiplierW * shiftMult;
+                nextCamPos.w += MoveMultiplierW * shiftMult * speed * deltaTime;
             int stateG = glfwGetKey(window.getWindow(), GLFW_KEY_G);
             if (stateG == GLFW_PRESS)
-                nextCamPos.w -= MoveMultiplierW * shiftMult;
+                nextCamPos.w -= MoveMultiplierW * shiftMult * speed * deltaTime;
 
 			cameraPosition += nextCamPos;
 
@@ -176,7 +179,7 @@ namespace Engine4D {
         vkDeviceWaitIdle(device.device());
     }
 
-    void rRenderer::loadModels() {
+    void rManager::loadModels() {
         rModel::Builder modelBuilder{};
         modelBuilder.vertices = {
             {{-1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
@@ -188,7 +191,7 @@ namespace Engine4D {
         model = std::make_unique<rModel>(device, modelBuilder);
     }
 
-    void rRenderer::createDescriptorSetLayout() {
+    void rManager::createDescriptorSetLayout() {
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
         uboLayoutBinding.binding = 0;
         uboLayoutBinding.descriptorCount = 1;
@@ -214,7 +217,7 @@ namespace Engine4D {
         }
     }
 
-    void rRenderer::createUniformBuffers() {
+    void rManager::createUniformBuffers() {
         const int MAX_FRAMES_IN_FLIGHT = rSwapChain::MAX_FRAMES_IN_FLIGHT;
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
@@ -229,7 +232,7 @@ namespace Engine4D {
         }
     }
 
-    void rRenderer::createDescriptorPool() {
+    void rManager::createDescriptorPool() {
         const int MAX_FRAMES_IN_FLIGHT = rSwapChain::MAX_FRAMES_IN_FLIGHT;
         std::array<VkDescriptorPoolSize, 2> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -248,7 +251,7 @@ namespace Engine4D {
         }
     }
 
-    void rRenderer::createDescriptorSets() {
+    void rManager::createDescriptorSets() {
         const int MAX_FRAMES_IN_FLIGHT = rSwapChain::MAX_FRAMES_IN_FLIGHT;;
         std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
         VkDescriptorSetAllocateInfo allocInfo{};
@@ -297,7 +300,7 @@ namespace Engine4D {
 
 
 
-    void rRenderer::createPipelineLayout() {
+    void rManager::createPipelineLayout() {
 
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -316,7 +319,7 @@ namespace Engine4D {
         }
     }
 
-    void rRenderer::recreateSwapChain() {
+    void rManager::recreateSwapChain() {
         auto extent = window.getExtent();
         while (extent.width == 0 || extent.height == 0) {
             extent = window.getExtent();
@@ -338,7 +341,7 @@ namespace Engine4D {
         createPipeline();
     }
 
-    void rRenderer::createPipeline() {
+    void rManager::createPipeline() {
         assert(swapChain != nullptr && "Cannot Create Pipeline before Swap Chain");
         assert(pipelineLayout != nullptr && "Cannot Create Pipeline before Pipeline Layout");
 
@@ -353,7 +356,7 @@ namespace Engine4D {
             pipelineConfig);
     }
 
-    void rRenderer::createCommandBuffers() {
+    void rManager::createCommandBuffers() {
         commandBuffers.resize(swapChain->imageCount());
 
         VkCommandBufferAllocateInfo allocInfo{};
@@ -368,7 +371,7 @@ namespace Engine4D {
         }
     }
 
-    void rRenderer::freeCommandBuffers() {
+    void rManager::freeCommandBuffers() {
         vkFreeCommandBuffers(
             device.device(),
             device.getCommandPool(),
@@ -377,7 +380,7 @@ namespace Engine4D {
         commandBuffers.clear();
     }
 
-    void rRenderer::recordCommandBuffer(int imageIndex) {
+    void rManager::recordCommandBuffer(int imageIndex) {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -434,7 +437,7 @@ namespace Engine4D {
         }
     }
 
-    void rRenderer::drawFrame() {
+    void rManager::drawFrame() {
         uint32_t imageIndex;
         auto result = swapChain->acquireNextImage(&imageIndex);
 		frameIndex = imageIndex;
