@@ -22,7 +22,18 @@ module;
 
 module Engine4D.Renderer.Manager;
 
+import Engine4D.Primitives;
+
 namespace Engine4D {
+
+    constexpr float RotateMultiplier = -2.0f;
+
+    constexpr float speed = 4.0f;
+
+    constexpr float MoveMultiplierX = 2.0f;
+    constexpr float MoveMultiplierY = 2.0f;
+    constexpr float MoveMultiplierZ = 2.0f;
+    constexpr float MoveMultiplierW = 0.6f;
 
     /*struct UniformBufferObject {
         alignas(16) glm::mat4 model;
@@ -54,22 +65,13 @@ namespace Engine4D {
         loadModels();
     }
 
-    rManager::~rManager() { }
+    rManager::~rManager() {
+		std::cout << "Destroying Manager" << std::endl;
+    }
 
 	std::string vec4ToString(glm::vec4 vec) {
 		return std::to_string(vec.x) + " " + std::to_string(vec.y) + " " + std::to_string(vec.z) + " " + std::to_string(vec.w);
 	}
-
-	constexpr float RotateMultiplier = -2.0f;
-
-    constexpr float speed = 4.0f;
-
-    constexpr float MoveMultiplierX = 2.0f;
-    constexpr float MoveMultiplierY = 2.0f;
-    constexpr float MoveMultiplierZ = 2.0f;
-    constexpr float MoveMultiplierW = 0.6f;
-
-    constexpr int MAX_INSTRUCTIONS = 10000;
 
     void rManager::cameraControls()
     {
@@ -137,7 +139,7 @@ namespace Engine4D {
 		for (int i = 0; i < rSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
             storageBuffers[i] = std::make_unique<rBuffer>(
 				device,
-				sizeof(Instruction),
+				sizeof(InstructionData),
                 MAX_INSTRUCTIONS,
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -166,16 +168,28 @@ namespace Engine4D {
         auto lastUpdatedTime = Time->now();
         auto lastFrameTime = Time->now();
 
+		bool fpsCounter = false;
+
         while (!window.shouldClose()) {
 
             auto currentTime = Time->now(); //glfwGetTime();
             double deltaTime = Time->toSeconds(currentTime - lastUpdatedTime);
+			double timeSinceLastFrame = Time->toSeconds(currentTime - lastFrameTime);
 
             glfwPollEvents();
 
-            if (Time->toSeconds(currentTime - lastFrameTime) >= 1.0 / MAX_FPS) {
+            if (timeSinceLastFrame >= 1.0 / MAX_FPS) {
 
                 if (auto commandbuffer = renderer.beginFrame()) {
+
+					fpsCounter = true;
+					if (fpsCounter) {
+                        timeSinceLastFrame = Time->toSeconds(currentTime - lastFrameTime);
+						std::cout << "FPS: " << 1.0 / timeSinceLastFrame << std::endl;
+						fpsCounter = false;
+					}
+
+                    fpsCounter = false;
 
                     Time->deltaTime = deltaTime;
                     cameraControls();
@@ -185,27 +199,32 @@ namespace Engine4D {
                     main_Late_Update();
 
 					int frameIndex = renderer.getFrameIndex();
-					FrameInfo frameInfo{
+                    FrameInfo frameInfo{
                         frameIndex,
                         commandbuffer,
-						CameraInfo{rotation, cameraPosition},
-						globalDescriptorSets[frameIndex]
+                        CameraInfo{rotation, cameraPosition},
+                        globalDescriptorSets[frameIndex],
+                        *instructionCount
                     };
-                    
-                    //Scene scene{};
 
-					//scene.instructions = *instructions;
+                    std::cout << "Current Frame: " << frameIndex << std::endl;
+                    
+				    InstructionData *instructionsData = instructions->data();
                     storageBuffers[frameIndex]->writeToBuffer(instructions->data());
-                    //storageBuffers[frameIndex]->writeToBuffer(&scene);
 					storageBuffers[frameIndex]->flush();
-
-                    
 
                     renderer.beginSwapChainRenderPass(commandbuffer);
 					system.renderObjects(frameInfo);
 
+					std::cout << "Ending Swapchain Render Pass: " << frameIndex << std::endl;
+
                     renderer.endSwapChainRenderPass(commandbuffer);
+
+                    std::cout << "Ending Frame: " << frameIndex << std::endl;
+
                     renderer.endFrame();
+
+                    std::cout << "Current Frame: " << renderer.forceGetFrameIndex() << std::endl;
 
                     lastFrameTime = currentTime;
 
@@ -214,8 +233,11 @@ namespace Engine4D {
                     lastUpdatedTime = currentTime;
                 }
             }
+            else fpsCounter = true;
 
         }
+
+		std::cout << "Main Loop Ended: " << window.shouldClose() << std::endl;
 
         vkDeviceWaitIdle(device.device());
     }

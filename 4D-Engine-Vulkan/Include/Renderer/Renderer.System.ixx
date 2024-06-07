@@ -26,12 +26,13 @@ import Engine4D.Structs;
 import Engine4D.Time;
 
 namespace Engine4D {
+
+	export constexpr int MAX_FPS = 120;
+
 	export class rSystem {
 		public:
 		void (*main_Update)();
 		void (*main_Late_Update)();
-
-		static constexpr int MAX_FPS = 30;
 
 		TimeClass* Time;
 

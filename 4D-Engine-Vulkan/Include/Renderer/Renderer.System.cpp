@@ -21,6 +21,7 @@ namespace Engine4D {
         alignas(4) float time;
         alignas(4) float rot;
         alignas(16) glm::vec4 cameraPosition;
+		alignas(4) int instructionsCount;
     };
 
     rSystem::rSystem(rDevice& device, std::unique_ptr<rModel>& model, rRendering& renderer, VkRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayout) : device{ device }, model{ model }, renderer{ renderer } {
@@ -28,7 +29,10 @@ namespace Engine4D {
         createPipeline(renderPass);
     }
 
-    rSystem::~rSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
+    rSystem::~rSystem() {
+		std::cout << "Destroying System" << std::endl;
+        vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr);
+    }
 
     void rSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayout) {
 
@@ -86,6 +90,9 @@ namespace Engine4D {
         push.time = static_cast<float>(glfwGetTime());
         push.rot = frameInfo.cameraInfo.rotation;
         push.cameraPosition = frameInfo.cameraInfo.cameraPosition;
+		push.instructionsCount = frameInfo.instructionsCount;
+
+        std::cout << "Instructions Count Push: " << push.instructionsCount << std::endl;
 
         vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantObject), &push);
 

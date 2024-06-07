@@ -25,7 +25,7 @@ import Engine4D.Renderer.Descriptors;
 
 
 import Engine4D.Structs;
-
+import Engine4D.Material;
 import Engine4D.Time;
 
 namespace Engine4D {
@@ -37,11 +37,11 @@ namespace Engine4D {
 		static constexpr int WIDTH = 800;
 		static constexpr int HEIGHT = 600;
 
-		static constexpr int MAX_FPS = 60;
-
 		TimeClass* Time;
 
-		std::vector<Instruction>* instructions;
+		std::vector<InstructionData>* instructions;
+		std::vector<Material*>* materials;
+		int* instructionCount;
 
 		uint32_t frameIndex = 0;
 

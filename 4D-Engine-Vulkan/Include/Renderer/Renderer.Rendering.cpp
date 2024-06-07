@@ -107,23 +107,34 @@ namespace Engine4D {
 
     void rRendering::endFrame()
     {
+		std::cout << "Ending Frame" << std::endl;
 		assert(isFrameStarted && "Can't End Frame While Frame is Not in Progress!");
 		auto commandBuffer = getCurrentCommandBuffer();
+
+		std::cout << "Ending Command Buffer" << std::endl;
 
         if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("Failed to Record Command Buffer!");
         }
 
+		std::cout << "Submitting Command Buffer" << std::endl;
+
         auto result = swapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+
+		std::cout << "Submitted Command Buffer" << std::endl;
 		
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
             window.wasWindowResized()) {
+			std::cout << "Recreating Swap Chain" << std::endl;
             window.resetWindowResizedFlag();
             recreateSwapChain();
         }
         else if (result != VK_SUCCESS) {
+			std::cout << "Failed to Present Swap Chain image!" << std::endl;
             throw std::runtime_error("Failed to Present Swap Chain image!");
         }
+
+		std::cout << "Done Ending Frame" << std::endl;
 
 		isFrameStarted = false;
 		currentFrameIndex = (currentFrameIndex + 1) % rSwapChain::MAX_FRAMES_IN_FLIGHT;

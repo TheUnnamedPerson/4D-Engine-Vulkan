@@ -50,6 +50,10 @@ namespace Engine4D {
 			return currentFrameIndex;
 		}
 
+		int forceGetFrameIndex() const {
+			return currentFrameIndex;
+		}
+
 		VkCommandBuffer getCurrentCommandBuffer() const {
 			assert(isFrameStarted && "Can't Get Command Buffer While Frame is in Progress!");
 			return commandBuffers[currentFrameIndex];

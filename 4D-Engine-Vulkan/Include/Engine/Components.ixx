@@ -8,6 +8,7 @@ export module Engine4D.Components;
 import Engine4D.Engine;
 import Engine4D.Primitives;
 import Engine4D.Structs;
+import Engine4D.Material;
 
 namespace Engine4D
 {
@@ -25,30 +26,18 @@ namespace Engine4D
 			void AddShape(Shape* shape);
 	};
 
-	export class Material
-	{
-		public:
-			Vector4 color;
-
-			Material();
-			Material(Vector4 color);
-
-			//Vector4 getColor();
-
-
-	};
-
 	export class MeshRenderer : public MonoBehavior
 	{
 		public:
 			Mesh mesh;
-			Material material;
+			Material* material;
 
 			MeshRenderer() = delete;
 			MeshRenderer(GameObject* gameObject);
-			MeshRenderer(GameObject* gameObject, Mesh mesh, Material material);
+			MeshRenderer(GameObject* gameObject, Material* material);
+			MeshRenderer(GameObject* gameObject, Mesh mesh, Material* material);
 
-			std::vector<Instruction> getInstructions();
+			std::vector<InstructionData> getInstructions();
 
 			void AddShape(Shape* shape);
 
@@ -61,7 +50,8 @@ namespace Engine4D
 		public:
 		Vector4 gravity;
 		Vector4 velocity;
-		Vector4 rotationalVelocity;
+		Vector3 rotationalVelocity;
+		Vector3 rotationalVelocityW;
 
 		float countdowntime = 0.0f;
 

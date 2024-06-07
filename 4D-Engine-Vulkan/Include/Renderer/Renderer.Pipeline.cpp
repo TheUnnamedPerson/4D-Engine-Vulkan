@@ -24,6 +24,7 @@ namespace Engine4D {
     }
 
     rPipeline::~rPipeline() {
+		std::cout << "Pipeline Destructor Called" << std::endl;
         vkDestroyShaderModule(device.device(), vertShaderModule, nullptr);
         vkDestroyShaderModule(device.device(), fragShaderModule, nullptr);
         vkDestroyPipeline(device.device(), graphicsPipeline, nullptr);
@@ -61,7 +62,12 @@ namespace Engine4D {
         auto fragCode = readFile(fragFilepath);
 
         createShaderModule(vertCode, &vertShaderModule);
+
+        std::cout << "Vertex Shader Module Created" << std::endl;
+
         createShaderModule(fragCode, &fragShaderModule);
+
+		std::cout << "Fragmentation Shader Module Created" << std::endl;
 
         VkPipelineShaderStageCreateInfo shaderStages[2];
         shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -79,6 +85,8 @@ namespace Engine4D {
         shaderStages[1].pNext = nullptr;
         shaderStages[1].pSpecializationInfo = nullptr;
 
+		std::cout << "Shader State Create Info Created" << std::endl;
+
         auto bindingDescriptions = rModel::Vertex::getBindingDescriptions();
         auto attributeDescriptions = rModel::Vertex::getAttributeDescriptions();
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -88,6 +96,8 @@ namespace Engine4D {
         vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
         vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+
+        std::cout << "Vertex Input Info Created" << std::endl;
 
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

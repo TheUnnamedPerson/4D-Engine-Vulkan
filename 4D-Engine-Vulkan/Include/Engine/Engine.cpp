@@ -22,16 +22,33 @@ namespace Engine4D
 	{
 		this->gameObject = gameObject;
 		this->position = Vector4(0);
-		this->rotation = Vector4(0);
+		this->rotation = Vector3(0);
+		this->rotationW = Vector3(0);
+		this->setRotationMatrix();
 		this->scale = Vector4(1);
+		this->setTransformationMatrix();
 	}
 
-	Transform::Transform(Vector4 position, Vector4 rotation, Vector4 scale, GameObject* gameObject)
+	Transform::Transform(Vector4 position, Vector3 rotation, Vector4 scale, GameObject* gameObject)
 	{
 		this->gameObject = gameObject;
 		this->position = position;
 		this->rotation = rotation;
+		this->setRotationMatrix();
+		this->rotationW = Vector3(0);
 		this->scale = scale;
+		this->setTransformationMatrix();
+	}
+
+	Transform::Transform(Vector4 position, Vector3 rotation, Vector3 rotationW, Vector4 scale, GameObject* gameObject)
+	{
+		this->gameObject = gameObject;
+		this->position = position;
+		this->rotation = rotation;
+		this->rotationW = rotationW;
+		this->setRotationMatrix();
+		this->scale = scale;
+		this->setTransformationMatrix();
 	}
 
 	std::string Transform::toString()
@@ -53,10 +70,10 @@ namespace Engine4D
 			if (components[i] != nullptr) delete components[i];
 		}
 		components.clear();
-		for (int i = 0; i < children.size(); i++)
+		/*for (int i = 0; i < children.size(); i++)
 		{
 			if (children[i] != nullptr) delete children[i];
-		}
+		}*/
 		children.clear();
 	}
 
@@ -134,11 +151,20 @@ namespace Engine4D
 		this->gameObjects = std::vector<GameObject**>();
 		this->root = new GameObject(this);
 		gameObjects.push_back(&this->root);
+		this->instructions.resize(MAX_INSTRUCTIONS);
+		this->materials.resize(MAX_MATERIAL_COUNT);
 	}
 
 	Engine::~Engine()
 	{
-		delete root;
+		//delete root;
+
+		for (int i = 0; i < materials.size(); i++)
+		{
+			if (materials[i] != nullptr) delete materials[i];
+		}
+		materials.clear();
+
 		gameObjects.clear();
 		instructions.clear();
 	}
@@ -146,12 +172,14 @@ namespace Engine4D
 	void Engine::Initialize()
 	{
 		renderer->instructions = &instructions;
+		renderer->instructionCount = &instructionCount;
+		renderer->materials = &materials;
 	}
 
 	void Engine::UpdateInstructions()
 	{
+		instructionCount = 0;
 		instructions.clear();
-		instructions = std::vector<Instruction>();
 		for (GameObject** gameObject : gameObjects)
 		{
 			for (Component* component : (*gameObject)->components)
@@ -159,11 +187,13 @@ namespace Engine4D
 				if (dynamic_cast<MeshRenderer*>(component) != nullptr)
 				{
 					MeshRenderer* meshRenderer = (MeshRenderer*)component;
-					std::vector<Instruction> _instructions = meshRenderer->getInstructions();
+					std::vector<InstructionData> _instructions = meshRenderer->getInstructions();
 					instructions.insert(instructions.end(), _instructions.begin(), _instructions.end());
+					instructionCount += _instructions.size();
 				}
 			}
 		}
+		instructions.resize(MAX_INSTRUCTIONS);
 	}
 
 	void Engine::Update()
@@ -191,6 +221,20 @@ namespace Engine4D
 	void Engine::AddGameObject(GameObject** gameObject)
 	{
 		gameObjects.push_back(gameObject);
+	}
+
+	Material* Engine::AddMaterial()
+	{
+		if (materialCount >= MAX_MATERIAL_COUNT)
+		{
+			return nullptr;
+		}
+
+		Material* result = new Material(materialCount);
+
+		materials.push_back(result);
+		materialCount++;
+		return result;
 	}
 
 }

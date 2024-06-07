@@ -76,6 +76,10 @@ namespace Engine4D {
             VK_TRUE,
             std::numeric_limits<uint64_t>::max());
 
+		std::cout << "Semaphore: " << imageAvailableSemaphores[currentFrame] << std::endl;
+        
+		//imageAvailableSemaphores[currentFrame] = vk
+
         VkResult result = vkAcquireNextImageKHR(
             device.device(),
             swapChain,
@@ -93,6 +97,8 @@ namespace Engine4D {
         }
         imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
 
+		std::cout << "Waited For Fences" << std::endl;
+
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -109,11 +115,25 @@ namespace Engine4D {
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
+		std::cout << "Resetting Fences" << std::endl;
+
         vkResetFences(device.device(), 1, &inFlightFences[currentFrame]);
+
+        bool _b = false;
+
+		std::cout << "Submitting Command Buffers: " << _b << std::endl;
+
+		std::cout << device.graphicsQueue() << std::endl;
+		//std::cout << device.graphicsQueue().size() << std::endl;
+
         if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
             VK_SUCCESS) {
+            _b = true;
+			std::cout << "Failed to Submit Draw Command Buffer!" << std::endl;
             throw std::runtime_error("Failed to Submit Draw Command Buffer!");
         }
+
+		std::cout << "Submit Command Buffers: " << _b << std::endl;
 
         VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -127,9 +147,13 @@ namespace Engine4D {
 
         presentInfo.pImageIndices = imageIndex;
 
+		std::cout << "Presenting Image" << std::endl;
+
         auto result = vkQueuePresentKHR(device.presentQueue(), &presentInfo);
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+		std::cout << "Done Result Image" << std::endl;
 
         return result;
     }

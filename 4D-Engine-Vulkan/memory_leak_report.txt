@@ -1,0 +1,451 @@
+Visual Leak Detector Version 2.5.1 installed.
+    Outputting the report to the debugger and to C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\memory_leak_report.txt
+WARNING: Visual Leak Detector detected memory leaks!
+---------- Block 5 at 0x000000004AFCA660: 272 bytes ----------
+  Leak Hash: 0xBBB89407, Count: 1, Total 272 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (152): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Engine::Engine() + 0xA bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (18): 4D-Engine-Vulkan.exe!`dynamic initializer for 'engine''() + 0x1D bytes
+    ucrtbased.dll!initterm() + 0x63 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (258): 4D-Engine-Vulkan.exe!__scrt_common_main_seh()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 00 00     ........ ........
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 00 00     ........ ........
+    00 00 00 00    00 00 00 00    00 00 80 3F    00 00 80 3F     ........ ...?...?
+    00 00 80 3F    00 00 80 3F    60 A6 FC 4A    0B 02 00 00     ...?...? `..J....
+    D0 4B FF 4A    0B 02 00 00    04 00 00 00    04 00 00 00     .K.J.... ........
+    00 00 80 3F    00 00 00 00    00 00 00 00    00 00 00 00     ...?.... ........
+    00 00 00 00    00 00 80 3F    00 00 00 00    00 00 00 00     .......? ........
+    00 00 00 00    00 00 00 00    00 00 80 3F    00 00 00 00     ........ ...?....
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 80 3F     ........ .......?
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 00 00     ........ ........
+    F0 B7 FE 4A    0B 02 00 00    47 61 6D 65    4F 62 6A 65     ...J.... GameObje
+    63 74 00 00    00 00 00 00    0A 00 00 00    00 00 00 00     ct...... ........
+    0F 00 00 00    00 00 00 00    00 5E 91 5E    F6 7F 00 00     ........ .^.^....
+    60 B6 FE 4A    0B 02 00 00    00 00 00 00    00 00 00 00     `..J.... ........
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 00 00     ........ ........
+    B0 B6 FE 4A    0B 02 00 00    A0 84 C2 4E    0B 02 00 00     ...J.... ...N....
+
+
+---------- Block 32 at 0x000000004AFEB660: 16 bytes ----------
+  Leak Hash: 0xC30C047F, Count: 1, Total 16 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<std::_Container_proxy>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (1212): 4D-Engine-Vulkan.exe!std::_Container_base12::_Alloc_proxy<std::allocator<std::_Container_proxy> >() + 0x11 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (610): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Component *,std::allocator<Engine4D::Component *> >::vector<Engine4D::Component *,std::allocator<Engine4D::Component *> >()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (60): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::GameObject() + 0x2B bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (152): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Engine::Engine() + 0x3F bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (18): 4D-Engine-Vulkan.exe!`dynamic initializer for 'engine''() + 0x1D bytes
+    ucrtbased.dll!initterm() + 0x63 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (258): 4D-Engine-Vulkan.exe!__scrt_common_main_seh()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    30 A7 FC 4A    0B 02 00 00    00 00 00 00    00 00 00 00     0..J.... ........
+
+
+---------- Block 33 at 0x000000004AFEB6B0: 16 bytes ----------
+  Leak Hash: 0x65397436, Count: 1, Total 16 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<std::_Container_proxy>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (1212): 4D-Engine-Vulkan.exe!std::_Container_base12::_Alloc_proxy<std::allocator<std::_Container_proxy> >() + 0x11 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (610): 4D-Engine-Vulkan.exe!std::vector<Engine4D::GameObject *,std::allocator<Engine4D::GameObject *> >::vector<Engine4D::GameObject *,std::allocator<Engine4D::GameObject *> >()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (60): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::GameObject() + 0x41 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (152): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Engine::Engine() + 0x3F bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (18): 4D-Engine-Vulkan.exe!`dynamic initializer for 'engine''() + 0x1D bytes
+    ucrtbased.dll!initterm() + 0x63 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (258): 4D-Engine-Vulkan.exe!__scrt_common_main_seh()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    50 A7 FC 4A    0B 02 00 00    00 00 00 00    00 00 00 00     P..J.... ........
+
+
+---------- Block 31 at 0x000000004AFEB7F0: 16 bytes ----------
+  Leak Hash: 0x7AD50C3D, Count: 1, Total 16 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<std::_Container_proxy>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (1212): 4D-Engine-Vulkan.exe!std::_Container_base12::_Alloc_proxy<std::allocator<std::_Container_proxy> >() + 0x11 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xstring (2648): 4D-Engine-Vulkan.exe!std::basic_string<char,std::char_traits<char>,std::allocator<char> >::_Construct_empty()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xstring (2501): 4D-Engine-Vulkan.exe!std::basic_string<char,std::char_traits<char>,std::allocator<char> >::basic_string<char,std::char_traits<char>,std::allocator<char> >()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (60): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::GameObject() + 0x15 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (152): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Engine::Engine() + 0x3F bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (18): 4D-Engine-Vulkan.exe!`dynamic initializer for 'engine''() + 0x1D bytes
+    ucrtbased.dll!initterm() + 0x63 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (258): 4D-Engine-Vulkan.exe!__scrt_common_main_seh()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    00 A7 FC 4A    0B 02 00 00    00 00 00 00    00 00 00 00     ...J.... ........
+
+
+---------- Block 59 at 0x000000004AFF4BD0: 64 bytes ----------
+  Leak Hash: 0x43554D1D, Count: 1, Total 64 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_array.cpp (30): 4D-Engine-Vulkan.exe!operator new[]()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Primitives.ixx (244): 4D-Engine-Vulkan.exe!Engine4D.Primitives::Engine4D::Matrix::operator=() + 0x40 bytes
+    4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Transform::operator=() + 0xB9 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (63): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::GameObject() + 0x3E bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (152): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Engine::Engine() + 0x3F bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (18): 4D-Engine-Vulkan.exe!`dynamic initializer for 'engine''() + 0x1D bytes
+    ucrtbased.dll!initterm() + 0x63 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (258): 4D-Engine-Vulkan.exe!__scrt_common_main_seh()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    00 00 80 3F    00 00 00 00    00 00 00 00    00 00 00 00     ...?.... ........
+    00 00 00 00    00 00 80 3F    00 00 00 00    00 00 00 00     .......? ........
+    00 00 00 00    00 00 00 00    00 00 80 3F    00 00 00 00     ........ ...?....
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 80 3F     ........ .......?
+
+
+---------- Block 751 at 0x000000004EBE39A0: 184 bytes ----------
+  Leak Hash: 0x9429C645, Count: 1, Total 184 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (69): 4D-Engine-Vulkan.exe!main() + 0xA bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    10 96 8C 5E    F6 7F 00 00    02 00 00 00    00 00 00 00     ...^.... ........
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 00 00     ........ ........
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 00 00     ........ ........
+    00 00 00 00    00 00 80 3F    00 00 80 3F    00 00 80 3F     .......? ...?...?
+    00 00 80 3F    00 00 00 00    70 94 7F 51    0B 02 00 00     ...?.... p..Q....
+    04 00 00 00    04 00 00 00    00 00 80 3F    00 00 00 00     ........ ...?....
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 80 3F     ........ .......?
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 00 00     ........ ........
+    00 00 80 3F    00 00 00 00    00 00 00 00    00 00 00 00     ...?.... ........
+    00 00 00 00    00 00 80 3F    00 00 00 00    00 00 00 00     .......? ........
+    00 00 00 00    00 00 00 00    00 00 80 3F    00 00 80 3F     ........ ...?...?
+    00 00 80 3F    00 00 80 3F                                   ...?...? ........
+
+
+---------- Block 769 at 0x000000004EC27E60: 16 bytes ----------
+  Leak Hash: 0xE6830200, Count: 1, Total 16 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<Engine4D::Component *>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (2213): 4D-Engine-Vulkan.exe!std::_Allocate_at_least_helper<std::allocator<Engine4D::Component *> >()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (829): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Component *,std::allocator<Engine4D::Component *> >::_Emplace_reallocate<Engine4D::Component *>() + 0x10 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (784): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Component *,std::allocator<Engine4D::Component *> >::_Emplace_one_at_back<Engine4D::Component *>()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (877): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Component *,std::allocator<Engine4D::Component *> >::push_back()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.ixx (187): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddComponent<Engine4D::RigidBody>()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (74): 4D-Engine-Vulkan.exe!main() + 0x21 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    F0 9F 7F 51    0B 02 00 00    C0 CB CF 4E    0B 02 00 00     ...Q.... ...N....
+
+
+---------- Block 713 at 0x000000004EC27F00: 16 bytes ----------
+  Leak Hash: 0x9923673F, Count: 1, Total 16 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<std::_Container_proxy>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (1212): 4D-Engine-Vulkan.exe!std::_Container_base12::_Alloc_proxy<std::allocator<std::_Container_proxy> >() + 0x11 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (610): 4D-Engine-Vulkan.exe!std::vector<Engine4D::GameObject *,std::allocator<Engine4D::GameObject *> >::vector<Engine4D::GameObject *,std::allocator<Engine4D::GameObject *> >()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (60): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::GameObject() + 0x41 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (82): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddChild() + 0x46 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (66): 4D-Engine-Vulkan.exe!main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    50 DF 7C 51    0B 02 00 00    00 00 00 00    00 00 00 00     P.|Q.... ........
+
+
+---------- Block 745 at 0x000000004EC28040: 16 bytes ----------
+  Leak Hash: 0xB1E1970A, Count: 1, Total 16 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<std::_Container_proxy>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (1212): 4D-Engine-Vulkan.exe!std::_Container_base12::_Alloc_proxy<std::allocator<std::_Container_proxy> >() + 0x11 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (610): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Shape *,std::allocator<Engine4D::Shape *> >::vector<Engine4D::Shape *,std::allocator<Engine4D::Shape *> >()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Components.cpp (17): 4D-Engine-Vulkan.exe!Engine4D.Components::Engine4D::Mesh::Mesh() + 0xC bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Components.cpp (39): 4D-Engine-Vulkan.exe!Engine4D.Components::Engine4D::MeshRenderer::MeshRenderer() + 0x24 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.ixx (186): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddComponent<Engine4D::MeshRenderer>() + 0x53 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (68): 4D-Engine-Vulkan.exe!main() + 0x21 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    08 A0 7F 51    0B 02 00 00    00 00 00 00    00 00 00 00     ...Q.... ........
+
+
+---------- Block 740 at 0x000000004EC284A0: 8 bytes ----------
+  Leak Hash: 0xB7979292, Count: 1, Total 8 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<Engine4D::GameObject *>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (2213): 4D-Engine-Vulkan.exe!std::_Allocate_at_least_helper<std::allocator<Engine4D::GameObject *> >()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (829): 4D-Engine-Vulkan.exe!std::vector<Engine4D::GameObject *,std::allocator<Engine4D::GameObject *> >::_Emplace_reallocate<Engine4D::GameObject * const &>() + 0x10 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (784): 4D-Engine-Vulkan.exe!std::vector<Engine4D::GameObject *,std::allocator<Engine4D::GameObject *> >::_Emplace_one_at_back<Engine4D::GameObject * const &>()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (872): 4D-Engine-Vulkan.exe!std::vector<Engine4D::GameObject *,std::allocator<Engine4D::GameObject *> >::push_back()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (84): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddChild()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (66): 4D-Engine-Vulkan.exe!main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    60 DE 7C 51    0B 02 00 00                                   `.|Q.... ........
+
+
+---------- Block 711 at 0x000000004EC28860: 16 bytes ----------
+  Leak Hash: 0x7CF3B37A, Count: 1, Total 16 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<std::_Container_proxy>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (1212): 4D-Engine-Vulkan.exe!std::_Container_base12::_Alloc_proxy<std::allocator<std::_Container_proxy> >() + 0x11 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xstring (2648): 4D-Engine-Vulkan.exe!std::basic_string<char,std::char_traits<char>,std::allocator<char> >::_Construct_empty()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xstring (2501): 4D-Engine-Vulkan.exe!std::basic_string<char,std::char_traits<char>,std::allocator<char> >::basic_string<char,std::char_traits<char>,std::allocator<char> >()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (60): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::GameObject() + 0x15 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (82): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddChild() + 0x46 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (66): 4D-Engine-Vulkan.exe!main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    00 DF 7C 51    0B 02 00 00    00 00 00 00    00 00 00 00     ..|Q.... ........
+
+
+---------- Block 712 at 0x000000004EC28A90: 16 bytes ----------
+  Leak Hash: 0x94DCAD7D, Count: 1, Total 16 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<std::_Container_proxy>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (1212): 4D-Engine-Vulkan.exe!std::_Container_base12::_Alloc_proxy<std::allocator<std::_Container_proxy> >() + 0x11 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (610): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Component *,std::allocator<Engine4D::Component *> >::vector<Engine4D::Component *,std::allocator<Engine4D::Component *> >()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (60): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::GameObject() + 0x2B bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (82): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddChild() + 0x46 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (66): 4D-Engine-Vulkan.exe!main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    30 DF 7C 51    0B 02 00 00    00 00 00 00    00 00 00 00     0.|Q.... ........
+
+
+---------- Block 767 at 0x000000004EC28EF0: 8 bytes ----------
+  Leak Hash: 0x0F668192, Count: 1, Total 8 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (91): 4D-Engine-Vulkan.exe!std::_Default_allocate_traits::_Allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (248): 4D-Engine-Vulkan.exe!std::_Allocate<16,std::_Default_allocate_traits,0>() + 0xC bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (983): 4D-Engine-Vulkan.exe!std::allocator<Engine4D::Shape *>::allocate()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\xmemory (2213): 4D-Engine-Vulkan.exe!std::_Allocate_at_least_helper<std::allocator<Engine4D::Shape *> >()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (829): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Shape *,std::allocator<Engine4D::Shape *> >::_Emplace_reallocate<Engine4D::Shape * const &>() + 0x10 bytes
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (784): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Shape *,std::allocator<Engine4D::Shape *> >::_Emplace_one_at_back<Engine4D::Shape * const &>()
+    C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\vector (872): 4D-Engine-Vulkan.exe!std::vector<Engine4D::Shape *,std::allocator<Engine4D::Shape *> >::push_back()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Components.cpp (36): 4D-Engine-Vulkan.exe!Engine4D.Components::Engine4D::Mesh::AddShape()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Components.cpp (63): 4D-Engine-Vulkan.exe!Engine4D.Components::Engine4D::MeshRenderer::AddShape()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (70): 4D-Engine-Vulkan.exe!main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    A0 39 BE 4E    0B 02 00 00                                   .9.N.... ........
+
+
+---------- Block 768 at 0x000000004ECFCBC0: 88 bytes ----------
+  Leak Hash: 0xF5C7902E, Count: 1, Total 88 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.ixx (186): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddComponent<Engine4D::RigidBody>() + 0x1E bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (74): 4D-Engine-Vulkan.exe!main() + 0x21 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    58 77 8C 5E    F6 7F 00 00    60 DE 7C 51    0B 02 00 00     Xw.^.... `.|Q....
+    60 DE 7C 51    0B 02 00 00    00 00 00 00    CD CC 1C C1     `.|Q.... ........
+    00 00 00 00    00 00 00 00    00 00 00 00    76 3C 31 BF     ........ ....v<1.
+    00 00 00 00    00 00 00 00    00 00 40 3F    00 00 00 00     ........ ..@?....
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 80 3F     ........ .......?
+    BF AE 90 3D    00 00 00 00                                   ...=.... ........
+
+
+---------- Block 685 at 0x00000000517CDE60: 272 bytes ----------
+  Leak Hash: 0x9A25C69C, Count: 1, Total 272 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (82): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddChild() + 0xA bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (66): 4D-Engine-Vulkan.exe!main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    00 00 00 00    67 DD 76 3F    00 00 00 00    00 00 00 00     ....g.v? ........
+    1F 06 59 3D    00 00 00 00    00 00 00 00    00 00 00 00     ..Y=.... ........
+    00 00 00 00    BF AE 90 3D    00 00 80 3F    00 00 80 3F     .......= ...?...?
+    00 00 80 3F    00 00 80 3F    60 DE 7C 51    0B 02 00 00     ...?...? `.|Q....
+    F0 9B 7F 51    0B 02 00 00    04 00 00 00    04 00 00 00     ...Q.... ........
+    29 5C 7F 3F    00 00 00 00    00 00 00 00    BC 96 90 BD     )\.?.... ........
+    00 00 00 00    40 A4 7F 3F    87 16 59 BD    00 00 00 00     ....@..? ..Y.....
+    00 00 00 00    87 16 59 3D    40 A4 7F 3F    00 00 00 00     ......Y= @..?....
+    BC 96 90 3D    00 00 00 00    00 00 00 00    29 5C 7F 3F     ...=.... ....)\.?
+    00 00 00 00    ED 84 76 3F    66 57 51 BD    00 00 00 00     ......v? fWQ.....
+    60 88 C2 4E    0B 02 00 00    47 61 6D 65    4F 62 6A 65     `..N.... GameObje
+    63 74 00 00    00 00 00 00    0A 00 00 00    00 00 00 00     ct...... ........
+    0F 00 00 00    00 00 00 00    00 5E 91 5E    F6 7F 00 00     ........ .^.^....
+    90 8A C2 4E    0B 02 00 00    60 7E C2 4E    0B 02 00 00     ...N.... `~.N....
+    70 7E C2 4E    0B 02 00 00    70 7E C2 4E    0B 02 00 00     p~.N.... p~.N....
+    00 7F C2 4E    0B 02 00 00    00 00 00 00    00 00 00 00     ...N.... ........
+
+
+---------- Block 766 at 0x00000000517F9470: 64 bytes ----------
+  Leak Hash: 0x7F5CE8FF, Count: 1, Total 64 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_array.cpp (30): 4D-Engine-Vulkan.exe!operator new[]()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Primitives.ixx (244): 4D-Engine-Vulkan.exe!Engine4D.Primitives::Engine4D::Matrix::operator=() + 0x40 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Primitives.ixx (462): 4D-Engine-Vulkan.exe!Engine4D.Primitives::Engine4D::Shape::setRotationMatrix4D() + 0x8C bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Primitives.ixx (479): 4D-Engine-Vulkan.exe!Engine4D.Primitives::Engine4D::Shape::setTransformationMatrix4D()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Primitives.cpp (707): 4D-Engine-Vulkan.exe!Engine4D.Primitives::Engine4D::Tesseract::Tesseract() + 0xC bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (69): 4D-Engine-Vulkan.exe!main() + 0x46 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    00 00 80 3F    00 00 00 00    00 00 00 00    00 00 00 00     ...?.... ........
+    00 00 00 00    00 00 80 3F    00 00 00 00    00 00 00 00     .......? ........
+    00 00 00 00    00 00 00 00    00 00 80 3F    00 00 00 00     ........ ...?....
+    00 00 00 00    00 00 00 00    00 00 00 00    00 00 80 3F     ........ .......?
+
+
+---------- Block 884 at 0x00000000517F9BF0: 64 bytes ----------
+  Leak Hash: 0x412E3514, Count: 1, Total 64 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_array.cpp (30): 4D-Engine-Vulkan.exe!operator new[]()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Primitives.ixx (244): 4D-Engine-Vulkan.exe!Engine4D.Primitives::Engine4D::Matrix::operator=() + 0x40 bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.ixx (47): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Transform::setRotationMatrix() + 0x8C bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.ixx (52): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Transform::setTransformationMatrix()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Components.cpp (146): 4D-Engine-Vulkan.exe!Engine4D.Components::Engine4D::RigidBody::Update()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (107): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::Update()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (111): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::Update()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.cpp (202): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::Engine::Update()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (26): 4D-Engine-Vulkan.exe!engine_Update()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Renderer\Renderer.Manager.cpp (197): 4D-Engine-Vulkan.exe!Engine4D.Renderer.Manager::Engine4D::rManager::run()
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (106): 4D-Engine-Vulkan.exe!main() + 0x9 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    29 5C 7F 3F    00 00 00 00    00 00 00 00    BC 96 90 3D     )\.?.... .......=
+    00 00 00 00    40 A4 7F 3F    87 16 59 3D    00 00 00 00     ....@..? ..Y=....
+    00 00 00 00    87 16 59 BD    40 A4 7F 3F    00 00 00 00     ......Y. @..?....
+    BC 96 90 BD    00 00 00 00    00 00 00 00    29 5C 7F 3F     ........ ....)\.?
+
+
+---------- Block 743 at 0x00000000517F9FF0: 64 bytes ----------
+  Leak Hash: 0xD5310814, Count: 1, Total 64 bytes
+  Call Stack (TID 14216):
+    ucrtbased.dll!malloc()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\heap\new_scalar.cpp (36): 4D-Engine-Vulkan.exe!operator new() + 0xA bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\Include\Engine\Engine.ixx (186): 4D-Engine-Vulkan.exe!Engine4D.Engine::Engine4D::GameObject::AddComponent<Engine4D::MeshRenderer>() + 0x1E bytes
+    C:\Users\ffons\Projects\4D-Engine-Vulkan\4D-Engine-Vulkan\main.cpp (68): 4D-Engine-Vulkan.exe!main() + 0x21 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (79): 4D-Engine-Vulkan.exe!invoke_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (288): 4D-Engine-Vulkan.exe!__scrt_common_main_seh() + 0x5 bytes
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl (331): 4D-Engine-Vulkan.exe!__scrt_common_main()
+    D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_main.cpp (17): 4D-Engine-Vulkan.exe!mainCRTStartup()
+    KERNEL32.DLL!BaseThreadInitThunk() + 0x1D bytes
+    ntdll.dll!RtlUserThreadStart() + 0x28 bytes
+  Data:
+    10 77 8C 5E    F6 7F 00 00    60 DE 7C 51    0B 02 00 00     .w.^.... `.|Q....
+    60 DE 7C 51    0B 02 00 00    40 80 C2 4E    0B 02 00 00     `.|Q.... @..N....
+    F0 8E C2 4E    0B 02 00 00    F8 8E C2 4E    0B 02 00 00     ...N.... ...N....
+    F8 8E C2 4E    0B 02 00 00    10 83 C2 4E    0B 02 00 00     ...N.... ...N....
+
+
+Visual Leak Detector detected 18 memory leaks (2152 bytes).
+Largest number used: 952516 bytes.
+Total allocations: 1087903 bytes.
+Visual Leak Detector is now exiting.

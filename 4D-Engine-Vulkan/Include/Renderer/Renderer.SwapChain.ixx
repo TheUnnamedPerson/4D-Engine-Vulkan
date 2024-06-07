@@ -18,7 +18,7 @@ namespace Engine4D {
 
     export class rSwapChain {
         public:
-        static constexpr int MAX_FRAMES_IN_FLIGHT = 3;
+        static constexpr int MAX_FRAMES_IN_FLIGHT = 4;
 
         rSwapChain(rDevice& deviceRef, VkExtent2D windowExtent);
         rSwapChain(

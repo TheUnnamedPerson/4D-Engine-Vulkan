@@ -13,6 +13,8 @@ import Engine4D.Primitives;
 
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+
 Engine4D::Engine engine;
 
 Engine4D::TimeClass Time = Engine4D::TimeClass();
@@ -41,30 +43,65 @@ int main() {
 
         engine.Initialize();
 
-        engine.root->AddChild();
+        /*engine.root->AddChild();
 
         std::cout << engine.root->GetChild(0)->transform.toString() << std::endl;
 
 		Engine4D::MeshRenderer* rend = engine.root->GetChild(0)->AddComponent<Engine4D::MeshRenderer>();
-		rend->AddShape(new Engine4D::HyperSphere());
-		rend->material.color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
-		rend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+
+		rend->AddShape(new Engine4D::HyperPlane());
+
+
+		rend->material->color = Engine4D::Vector4(0.1f, 0.65f, 0.6f, 1.0f);
+
+        rend->transform->position = Engine4D::Vector4(0, 0, 0, 0);*/
+
+
+
+
+
+        engine.root->AddChild();
+
+        std::cout << engine.root->GetChild(0)->transform.toString() << std::endl;
+
+        Engine4D::MeshRenderer* rend = engine.root->GetChild(0)->AddComponent<Engine4D::MeshRenderer>();
+        rend->AddShape(new Engine4D::Tesseract());
+        rend->material->color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+
+        rend->transform->position = Engine4D::Vector4(0, 1, 0, 0);//Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
 
         Engine4D::RigidBody* rb = engine.root->GetChild(0)->AddComponent<Engine4D::RigidBody>();
-		rb->rotationalVelocity = Engine4D::Vector4(0.75f, 1.0f, 0.0f, 0.0f);
+        rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
+        rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);
 
         engine.UpdateInstructions();
 
-		std::cout << "Instructions: " << engine.instructions.size() << std::endl;
+        //std::cout << "Instructions Size" << engine.instructions.size() << std::endl;
 
-		for (int i = 0; i < engine.instructions.size(); i++)
+		/*Engine4D::Vector4 result = Engine4D::Matrix::RotationMatrixEuler4D(Engine4D::Vector4(.3224, .123213, .123123, 23.34)) * Engine4D::Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+        std::cout << "(1, 1, 1, 1) Rotated: " << result.normalized() << std::endl;
+        result = Engine4D::Matrix::RotationMatrixEuler4D(Engine4D::Vector4(.3224, .123213, .123123, 23.34)) * result;
+        std::cout << "(1, 1, 1, 1) Rotated: " << result.normalized() << std::endl;*/
+
+		std::cout << "Instructions: " << engine.instructionCount << std::endl;
+
+		for (int i = 0; i < engine.instructionCount; i++)
         {
 			std::cout << "Instruction: " << i << std::endl;
-			std::cout << "\tType: " << engine.instructions[i].type << std::endl;
-			std::cout << "\tValue A: " << Engine4D::Vector4(engine.instructions[i].valueA) << std::endl;
-            std::cout << "\tValue A: " << Engine4D::Vector4(engine.instructions[i].valueB) << std::endl;
+			//std::cout << "\tType: " << engine.instructions[i].type << std::endl;
+			std::cout << "\tValue A: " << Engine4D::Matrix(engine.instructions[i].valueA) << std::endl;
+            //std::cout << "\tFloat A: " << Engine4D::Vector4(engine.instructions[i].floatA) << std::endl;
+            //std::cout << "\tFloat B: " << Engine4D::Vector4(engine.instructions[i].floatA) << std::endl;
+            std::cout << "\tValue B: " << Engine4D::Vector4(engine.instructions[i].floatB, engine.instructions[i].floatC, engine.instructions[i].floatD, engine.instructions[i].valueE) << std::endl;
+            std::cout << "\tValue B.w: " << engine.instructions[i].valueE << std::endl;
 		}
+
+        std::cout << "\rb.rotation: " << rb->transform->rotation << " ; " << rb->transform->rotationW << std::endl;
+
+        std::cout << "\tMat(1): " << Engine4D::Matrix(glm::mat4(1)) << std::endl;
+
+        //glm::mat4 _test1;
 
         app.run(); //vertices, indices);
         
