@@ -41,7 +41,8 @@ namespace Engine4D {
 
 		TimeClass* Time;
 
-		std::vector<Instruction>* instructions;
+		std::vector<InstructionData>* instructions;
+		int* instructionCount;
 
 		uint32_t frameIndex = 0;
 

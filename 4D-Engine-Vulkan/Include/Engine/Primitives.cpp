@@ -3,6 +3,7 @@ module;
 #include <iostream>
 #include <cmath>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 module Engine4D.Primitives;
 
@@ -127,7 +128,7 @@ namespace Engine4D
 
 	std::ostream& operator<<(std::ostream& os, const Vector2& vec)
 	{
-		os << "Vector2(" << vec.x << ", " << vec.y << ")";
+		os << "(" << vec.x << ", " << vec.y << ")";
 		return os;
 	}
 
@@ -302,7 +303,7 @@ namespace Engine4D
 
 	std::ostream& operator<<(std::ostream& os, const Vector3& vec)
 	{
-		os << "Vector3(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+		os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
 		return os;
 	}
 
@@ -366,6 +367,24 @@ namespace Engine4D
 	Vector4 Vector4::normalized()
 	{
 		return *this / length();
+	}
+
+	float Vector4::minValue()
+	{
+		float min = x;
+		if (y < min) min = y;
+		if (z < min) min = z;
+		if (w < min) min = w;
+		return min;
+	}
+
+	float Vector4::maxValue()
+	{
+		float max = x;
+		if (y > max) max = y;
+		if (z > max) max = z;
+		if (w > max) max = w;
+		return max;
 	}
 
 	Vector2 Vector4::xy()
@@ -515,9 +534,26 @@ namespace Engine4D
 		return *this;
 	}
 
+	Vector4 Vector4::operator*(const Matrix& other) const
+	{
+		if (other.rows != 4 || other.columns != 4) throw "Invalid Matrix";
+		Vector4 result = Vector4(0, 0, 0, 0);
+		float* vectorValues = new float[4];
+		vectorValues[0] = x;
+		vectorValues[1] = y;
+		vectorValues[2] = z;
+		vectorValues[3] = w;
+		for (int i = 0; i < other.columns; i++) result.x += vectorValues[i] * other(0, i);
+		for (int i = 0; i < other.columns; i++) result.y += vectorValues[i] * other(1, i);
+		for (int i = 0; i < other.columns; i++) result.z += vectorValues[i] * other(2, i);
+		for (int i = 0; i < other.columns; i++) result.w += vectorValues[i] * other(3, i);
+		delete[] vectorValues;
+		return result;
+	}
+
 	std::ostream& operator<<(std::ostream& os, const Vector4& vec)
 	{
-		os << "Vector4(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
+		os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
 		return os;
 	}
 
@@ -546,72 +582,202 @@ namespace Engine4D
 		return Vector4(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x, 0);
 	}
 
-	Shape::Shape ()
+	Vector4 Matrix::operator*(const Vector4& other) const
+	{
+		if (rows != 4 || columns != 4) throw "Invalid Matrix";
+		float* vectorValues = new float[4];
+		vectorValues[0] = other.x;
+		vectorValues[1] = other.y;
+		vectorValues[2] = other.z;
+		vectorValues[3] = other.w;
+		Vector4 result = Vector4(0, 0, 0, 0);
+		for (int i = 0; i < rows; i++) result.x += vectorValues[i] * (*this)(i, 0);
+		for (int i = 0; i < rows; i++) result.y += vectorValues[i] * (*this)(i, 1);
+		for (int i = 0; i < rows; i++) result.z += vectorValues[i] * (*this)(i, 2);
+		for (int i = 0; i < rows; i++) result.w += vectorValues[i] * (*this)(i, 3);
+		delete[] vectorValues;
+		return result;
+	}
+
+	Matrix Matrix::operator*(const Matrix& other) const
+	{
+		//if (rows != 4 || columns != 4) throw "Invalid Matrix";
+		Matrix result = Matrix(rows, other.columns);
+
+		for (int i = 0; i < rows; i++)
+		{
+			for (int j = 0; j < other.columns; j++)
+			{
+				float sum = 0;
+				for (int k = 0; k < columns; k++)
+				{
+					sum += (*this)(i, k) * other(k, j);
+				}
+				result(i, j) = sum;
+			}
+		}
+
+		return result;
+	}
+
+	std::ostream& operator<<(std::ostream& Str, Matrix const& v)
+	{
+		Str << "[";
+		for (int i = 0; i < v.rows; i++)
+		{
+			Str << "[";
+			for (int j = 0; j < v.columns; j++)
+			{
+				Str << v(i, j);
+				if (j != v.columns - 1) Str << ", ";
+			}
+			Str << "]";
+			if (i != v.rows - 1) Str << ", ";
+		}
+		Str << "]";
+		return Str;
+	}
+
+	Shape::Shape()
 	{
 		this->shapeType = 0;
 		this->position = Vector4(0);
-		this->rotation = Vector4(0);
+		this->rotation = Vector3(0);
+		this->rotationMatrix = Matrix::Identity(4);
 		this->scale = Vector4(1);
 	}
 
-	Shape::Shape (Vector4 position, Vector4 rotation, Vector4 scale)
+	Shape::Shape(Vector4 position, Vector3 rotation, Vector4 scale)
 	{
 		this->shapeType = 0;
 		this->position = position;
 		this->rotation = rotation;
+		this->rotationMatrix = Matrix::RotationMatrixEuler(rotation);
+		this->scale = scale;
+	}
+
+	Shape::Shape(Vector4 position, Vector3 rotation, Vector3 rotationW, Vector4 scale)
+	{
+		this->shapeType = 0;
+		this->position = position;
+		this->rotation = rotation;
+		this->rotationW = rotationW;
+		this->rotationMatrix = Matrix::RotationMatrixDoubleEuler4D(rotation, rotationW);
 		this->scale = scale;
 	}
 
 	HyperSphere::HyperSphere() : Shape()
 	{
 		this->shapeType = 1;
-		this->radius = 1;
+		setTransformationMatrix4D();
 	}
 
-	HyperSphere::HyperSphere(Vector4 position, Vector4 rotation, Vector4 scale, float radius) : Shape(position, rotation, scale)
+	HyperSphere::HyperSphere(Vector4 position, Vector3 rotation, Vector4 scale) : Shape(position, rotation, scale)
 	{
 		this->shapeType = 1;
-		this->radius = radius;
+		setTransformationMatrix4D();
+	}
+
+	HyperSphere::HyperSphere(Vector4 position, Vector3 rotation, Vector3 rotationW, Vector4 scale) : Shape(position, rotation, rotationW, scale)
+	{
+		this->shapeType = 1;
+		setTransformationMatrix4D();
 	}
 
 	float HyperSphere::SDF(Vector4 point)
 	{
-		return point.length() - radius;
+		point /= scale;
+		float result = point.length() - radius;
+		float sF = scale.maxValue();
+		return result / sF;
 	}
 
 	Instruction HyperSphere::getInstruction()
 	{
 		Instruction instruction = Instruction();
 		instruction.type = shapeType;
-		instruction.valueA = glm::vec4(radius, 0, 0, 0);
-		instruction.valueB = glm::vec4(0);
+		instruction.valueA = transformationMatrix;
+		instruction.valueB = (glm::vec4)position;
 		return instruction;
 	}
 
 	Tesseract::Tesseract() : Shape()
 	{
 		this->shapeType = 2;
-		this->size = Vector4(1, 1, 1, 1);
+		setTransformationMatrix4D();
 	}
 
-	Tesseract::Tesseract(Vector4 position, Vector4 rotation, Vector4 scale, Vector4 size) : Shape(position, rotation, scale)
+	Tesseract::Tesseract(Vector4 position, Vector3 rotation, Vector4 scale) : Shape(position, rotation, scale)
 	{
 		this->shapeType = 2;
-		this->size = size;
+		setTransformationMatrix4D();
+	}
+
+	Tesseract::Tesseract(Vector4 position, Vector3 rotation, Vector3 rotationW, Vector4 scale) : Shape(position, rotation, rotationW, scale)
+	{
+		this->shapeType = 2;
+		setTransformationMatrix4D();
 	}
 
 	float Tesseract::SDF(Vector4 point)
 	{
+		point /= scale;
 		Vector4 q = point.abs() - size;
-		return std::fmin(std::fmax(q.x, std::fmax(q.y, std::fmax(q.z, q.w))), 0.) + max(q, Vector4(0)).length();
+		float result = std::fmin(std::fmax(q.x, std::fmax(q.y, std::fmax(q.z, q.w))), 0.) + max(q, Vector4(0)).length();
+		float sF = scale.maxValue();
+		return result / sF;
 	}
 
 	Instruction Tesseract::getInstruction()
 	{
 		Instruction instruction = Instruction();
 		instruction.type = shapeType;
-		instruction.valueA = glm::vec4(size.x, size.y, size.z, size.w);
-		instruction.valueB = glm::vec4(0);
+		instruction.valueA = transformationMatrix;
+		instruction.valueB = (glm::vec4)position;
+		return instruction;
+	}
+
+	HyperPlane::HyperPlane() : Shape()
+	{
+		this->shapeType = 3;
+		setTransformationMatrix4D();
+	}
+
+	HyperPlane::HyperPlane(Vector4 position, Vector3 rotation) : Shape(position, rotation, Vector4(1))
+	{
+		this->shapeType = 3;
+		setTransformationMatrix4D();
+	}
+
+	HyperPlane::HyperPlane(Vector4 position, Vector3 rotation, Vector3 rotationW) : Shape(position, rotation, rotationW, Vector4(1))
+	{
+		this->shapeType = 3;
+		setTransformationMatrix4D();
+	}
+
+	HyperPlane::HyperPlane(Vector4 position, Vector4 normal) : Shape(position, normal.xyz(), Vector3(normal.w, Vector2(0)), Vector4(1))
+	{
+		this->shapeType = 3;
+		setTransformationMatrix4D();
+	}
+
+	float HyperPlane::SDF(Vector4 point)
+	{
+		point /= scale;
+		float result = dot(point, normal) - position.y;
+		float sF = scale.maxValue();
+		return result / sF;
+	}
+
+	Instruction HyperPlane::getInstruction()
+	{
+		Instruction instruction = Instruction();
+		instruction.type = shapeType;
+		instruction.valueA = transformationMatrix;
+		instruction.valueB = (glm::vec4)position;
+		float x = instruction.valueB.x;
+		instruction.valueB.x = instruction.valueB.y;
+		instruction.valueB.y = x;
 		return instruction;
 	}
 

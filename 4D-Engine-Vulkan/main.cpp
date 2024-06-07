@@ -46,24 +46,26 @@ int main() {
         std::cout << engine.root->GetChild(0)->transform.toString() << std::endl;
 
 		Engine4D::MeshRenderer* rend = engine.root->GetChild(0)->AddComponent<Engine4D::MeshRenderer>();
-		rend->AddShape(new Engine4D::HyperSphere());
-		rend->material.color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+		rend->AddShape(new Engine4D::Tesseract());
+		rend->material->color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+		rend->material->index = 2;
 
 		rend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
 
         Engine4D::RigidBody* rb = engine.root->GetChild(0)->AddComponent<Engine4D::RigidBody>();
-		rb->rotationalVelocity = Engine4D::Vector4(0.75f, 1.0f, 0.0f, 0.0f);
+        rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
+        rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);
 
         engine.UpdateInstructions();
 
-		std::cout << "Instructions: " << engine.instructions.size() << std::endl;
+		std::cout << "Instructions: " << engine.instructionCount << std::endl;
 
-		for (int i = 0; i < engine.instructions.size(); i++)
+		for (int i = 0; i < engine.instructionCount; i++)
         {
 			std::cout << "Instruction: " << i << std::endl;
-			std::cout << "\tType: " << engine.instructions[i].type << std::endl;
-			std::cout << "\tValue A: " << Engine4D::Vector4(engine.instructions[i].valueA) << std::endl;
-            std::cout << "\tValue A: " << Engine4D::Vector4(engine.instructions[i].valueB) << std::endl;
+            std::cout << "\tValue A: " << Engine4D::Matrix(engine.instructions[i].valueA) << std::endl;
+            std::cout << "\tValue B: " << Engine4D::Vector4(engine.instructions[i].floatB, engine.instructions[i].floatC, engine.instructions[i].floatD, engine.instructions[i].valueE) << std::endl;
+            std::cout << "\tValue B.w: " << engine.instructions[i].valueE << std::endl;
 		}
 
         app.run(); //vertices, indices);

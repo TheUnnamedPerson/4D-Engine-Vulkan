@@ -1,6 +1,10 @@
 #version 450
 
 precision highp float; 
+
+const int MAX_INSTRUCTIONS = 10000;
+const int MAX_INSTRUCTION_DATA = 16;
+
 /*
 uniform vec2 u_resolution;  // Width and height of the shader
 uniform float u_time;  // Time elapsed*/
@@ -11,18 +15,33 @@ layout(push_constant) uniform u_values
     float u_time;
 	float u_rot;
 	vec4 u_cam;
+	int u_numInstructions;
 } push;
+
+//See 
+struct InstructionData
+{
+	mat4 valueA;
+	float floatB;
+	float floatC;
+	float floatD;
+	int valueE;
+};
 
 struct Instruction
 {
 	int instructionType;
-	vec4 valueA;
+	mat4 valueA;
 	vec4 valueB;
 };
 
 layout(set = 0, binding = 0) buffer InstructionsBuffer
 {
-	Instruction instructions_data[];
+	InstructionData instructions_data[MAX_INSTRUCTIONS];
+};
+
+struct Material {
+	vec4 diffuse;
 };
 
  
@@ -34,47 +53,40 @@ layout(set = 0, binding = 0) buffer InstructionsBuffer
 #define SURFACE_DIST .001
 
 layout(location = 0) in vec3 fragColor;
-//layout(location = 1) in vec2 fragTexCoord;
-
-//layout(binding = 1) uniform sampler2D texSampler;
 
 layout(location = 0) out vec4 outColor;
 
-/*
-void main() {
-    outColor = vec4(fragColor, 1.0); //* texture(texSampler, fragTexCoord);
-}*/
-
-struct shape {
-	float dis;
-	vec4 color;
-};
-
-shape hyperSphere (vec4 p, float r, vec4 color) {
-	return shape(length(p) - r, color);
+float hyperSphere (vec4 p) {
+	float r = 1;
+	//return shape(length(p) - r, color);
+	return length(p) - r;
 }
 
-shape tesseract(vec4 p, vec4 b, vec4 color )
+float tesseract(vec4 p)
 {
-  //p -= b1;
-  //vec4 b = b2 - b1;
-  vec4 q = abs(p) - b;
-  float result = min(max(q.x, max(q.y, max(q.z, q.w))), 0.) + length(max(q, 0.));
-  return shape(result, color);
-  //return shape(length(max(q,0.0)) + min(max(q.x,max(q.y,max(q.z, q.w))),0.0), color);
+	vec4 b = vec4(1);
+	//p -= b1;
+	//vec4 b = b2 - b1;
+	vec4 q = abs(p) - b;
+	float result = min(max(q.x, max(q.y, max(q.z, q.w))), 0.) + length(max(q, 0.));
+	return result;
 }
 
-shape hyperCylinder (vec4 p, float r, float depth, vec4 color) {
+float hyperCylinder (vec4 p) {
+	float r = 1;
+	float depth = 1;
 	float d = length(p.xyz) - r;
 	float dW = 0;
 	if (p.w < 0 || p.w > depth) {
 		d = max(d, 0);
 		dW = min(abs(p.w), abs(p.w - depth));
 	}
-	return shape(sqrt(d * d + dW * dW), color);
+	return sqrt(d * d + dW * dW);
 }
 
-float cylinder (vec3 p, float r, float depth) {
+float cylinder (vec3 p) {
+	float r = 1;
+	float depth = 1;
 	float d = length(p.xy) - r;
 	float dZ = 0;
 	if (p.z < 0 || p.z > depth) {
@@ -84,28 +96,32 @@ float cylinder (vec3 p, float r, float depth) {
 	return sqrt(d * d + dZ * dZ);
 }
 
-shape cylindricalPrism (vec4 p, vec2 c, float depth, vec4 color) {
-	float d = cylinder(p.xyz, c.x, c.y);
+float cylindricalPrism (vec4 p) {
+	float depth = 1;
+	float d = cylinder(p.xyz);
 	float dW = 0;
 	if (p.w < 0 || p.w > depth) {
 		d = max(d, 0);
 		dW = min(abs(p.w), abs(p.w - depth));
 	}
-	return shape(sqrt(d * d + dW * dW), color);
+	return sqrt(d * d + dW * dW);
 }
 
-shape tetrahedronalPrism(vec4 p, float depth, vec4 color)
+float tetrahedronalPrism(vec4 p)
 {
+	float depth = 1;
 	float d = (max(abs(p.x + p.y) - p.z, abs(p.x - p.y) + p.z) - 1.) / sqrt(3.);
 	float dW = 0;
 	if (p.w < 0 || p.w > depth) {
 		d = max(d, 0);
 		dW = min(abs(p.w), abs(p.w - depth));
 	}
-	return shape(sqrt(d * d + dW * dW), color);
+	return sqrt(d * d + dW * dW);
 }
 
-shape cubePrism(vec4 p, vec3 b, float depth, vec4 color) {
+float cubePrism(vec4 p) {
+	vec3 b = vec3(1);
+	float depth = 1;
 	vec3 q = abs(p.xyz) - b;
 	float d = length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
 	float dW = 0;
@@ -113,91 +129,55 @@ shape cubePrism(vec4 p, vec3 b, float depth, vec4 color) {
 		d = max(d, 0);
 		dW = min(abs(p.w), abs(p.w - depth));
 	}
-	return shape(sqrt(d * d + dW * dW), color);
+	return sqrt(d * d + dW * dW);
 }
 
-shape torusPrism(vec4 p, float smallRadius, float largeRadius, float depth, vec4 color) {
+float torusPrism(vec4 p) {
+	float smallRadius = 0.5;
+	float largeRadius = 1;
+	float depth = 1;
 	float d = length(vec2(length(p.xz) - largeRadius, p.y)) - smallRadius;
 	float dW = 0;
 	if (p.w < 0 || p.w > depth) {
 		d = max(d, 0);
 		dW = min(abs(p.w), abs(p.w - depth));
 	}
-	return shape(sqrt(d * d + dW * dW), color);
+	return sqrt(d * d + dW * dW);
 }
 
-float cone ( vec3 p, float base, float h )
+float cone (vec3 p)
 {
-  vec2 c = vec2(h / sqrt(base*base + h*h), base / sqrt(base*base + h*h));
-  vec2 q = h*vec2(c.x/c.y,-1.0);    
-  vec2 w = vec2( length(p.xz), p.y );
-  vec2 a = w - q*clamp( dot(w,q)/dot(q,q), 0.0, 1.0 );
-  vec2 b = w - q*vec2( clamp( w.x/q.x, 0.0, 1.0 ), 1.0 );
-  float k = sign( q.y );
-  float d = min(dot( a, a ),dot(b, b));
-  float s = max( k*(w.x*q.y-w.y*q.x),k*(w.y-q.y)  );
-  return sqrt(d)*sign(s);
+	float base = 1;
+	float h = 1;
+	vec2 c = vec2(h / sqrt(base*base + h*h), base / sqrt(base*base + h*h));
+	vec2 q = h*vec2(c.x/c.y,-1.0);    
+	vec2 w = vec2( length(p.xz), p.y );
+	vec2 a = w - q*clamp( dot(w,q)/dot(q,q), 0.0, 1.0 );
+	vec2 b = w - q*vec2( clamp( w.x/q.x, 0.0, 1.0 ), 1.0 );
+	float k = sign( q.y );
+	float d = min(dot( a, a ),dot(b, b));
+	float s = max( k*(w.x*q.y-w.y*q.x),k*(w.y-q.y)  );
+	return sqrt(d)*sign(s);
 }
 
-shape conePrism(vec4 p, float base, float h, float depth, vec4 color)
+float conePrism(vec4 p)
 {
-	float d = cone(p.xyz, base, h);
+	float depth = 1;
+	float d = cone(p.xyz);
 	float dW = 0;
 	if (p.w < 0 || p.w > depth) {
 		d = max(d, 0);
 		dW = min(abs(p.w), abs(p.w - depth));
 	}
-	return shape(sqrt(d * d + dW * dW), color);
+	return sqrt(d * d + dW * dW);
 }
 
-shape hyperPlane(vec4 p, vec4 n, float h, vec4 color)
+float hyperPlane(vec4 p, vec4 n, float h)
 {
-	return shape(dot(p,n) - h ,color);
-}
-
-shape unionSdf (shape shapeA, shape shapeB)
-{
-	if (shapeA.dis < shapeB.dis) return shape(shapeA.dis, shapeA.color);
-	else return shape(shapeB.dis, shapeB.color);
-}
-
-shape intersectSdf (shape shapeA, shape shapeB)
-{
-	return shape(max(shapeA.dis, shapeB.dis), (shapeA.color + shapeB.color) / 2);
-}
-
-shape subtractSdf (shape shapeA, shape shapeB)
-{
-	if (shapeA.dis > -1 * shapeB.dis) return shape(shapeA.dis, shapeA.color);
-	else return shape(-1 * shapeB.dis, shapeA.color);
+	return dot(p,n) - h;
 }
 
 
-shape smoothUnionSDF(shape shapeA, shape shapeB, float k ) {
-  float h = clamp(0.5 + 0.5 * (shapeA.dis - shapeB.dis) / k, 0., 1.);
-  float result = mix(shapeA.dis, shapeB.dis, h) - k * h * (1. - h);
-  float r = mix(shapeA.color.x, shapeB.color.x, h);
-  float g = mix(shapeA.color.y, shapeB.color.y, h);
-  float b = mix(shapeA.color.z, shapeB.color.z, h);
-  float a = mix(shapeA.color.w, shapeB.color.w, h);
-  return shape(result, vec4(r,g,b,a));
-}
-
-shape smoothIntersectSDF(shape shapeA, shape shapeB, float k) {
-	float h = clamp(0.5 - 0.5 * (shapeA.dis - shapeB.dis) / k, 0., 1.);
-	float result = mix(shapeA.dis, shapeB.dis, h ) + k * h * (1. - h);
-	float r = mix(shapeA.color.x, shapeB.color.x, h);
-	float g = mix(shapeA.color.y, shapeB.color.y, h);
-	float b = mix(shapeA.color.z, shapeB.color.z, h);
-	float a = mix(shapeA.color.w, shapeB.color.w, h);
-	return shape(result, vec4(r,g,b,a));
-}
-
-shape smoothSubtractSDF(shape shapeA, shape shapeB, float k) {
-    float h = clamp(0.5 - 0.5 * (shapeA.dis + shapeB.dis) / k, 0., 1.);
-	float result = mix(shapeA.dis, -shapeB.dis, h ) + k * h * (1. - h);
-    return shape(result, shapeA.color);
-}
 
 
 //enum rotationPlane {
@@ -208,6 +188,8 @@ const int XW = 4;
 const int XZ = 5;
 const int XY = 6;
 //};
+
+
 
 mat4 rotationMatrix4D(float angle, int plane)
 {
@@ -268,145 +250,278 @@ vec4 rotate4D(vec4 p, vec4 about, float angle, int plane)
 	return result + about;
 }
 
+float unionSdf (float distanceA, float distanceB)
+{
+	if (distanceA < distanceB)
+	{
+		
+		return distanceA;
+	}
+	else
+	{
+		
+		return distanceB;
+	}
+}
+
+float intersectSdf (float distanceA, float distanceB)
+{
+	
+	return max(distanceA, distanceB);
+}
+
+float subtractSdf (float distanceA, float distanceB)
+{
+	if (distanceA > -1 * distanceB)
+	{
+		
+		return distanceA;
+	}
+	else
+	{
+		
+		return -1 * distanceB;
+	}
+}
+
+float smoothUnionSDF(float distanceA, float distanceB, float k ) {
+  float h = clamp(0.5 + 0.5 * (distanceA - distanceB) / k, 0., 1.);
+  float result = mix(distanceA, distanceB, h) - k * h * (1. - h);
+  /*float r = mix(distanceA.color.x, distanceB.color.x, h);
+  float g = mix(distanceA.color.y, distanceB.color.y, h);
+  float b = mix(distanceA.color.z, distanceB.color.z, h);
+  float a = mix(distanceA.color.w, distanceB.color.w, h);*/
+  return result;
+}
+
+float smoothIntersectSDF(float distanceA, float distanceB, float k) {
+	float h = clamp(0.5 - 0.5 * (distanceA - distanceB) / k, 0., 1.);
+	float result = mix(distanceA, distanceB, h ) + k * h * (1. - h);
+	/*float r = mix(distanceA.color.x, distanceB.color.x, h);
+  float g = mix(distanceA.color.y, distanceB.color.y, h);
+  float b = mix(distanceA.color.z, distanceB.color.z, h);
+  float a = mix(distanceA.color.w, distanceB.color.w, h);*/
+	return result;
+}
+
+float smoothSubtractSDF(float distanceA, float distanceB, float k) {
+    float h = clamp(0.5 - 0.5 * (distanceA + distanceB) / k, 0., 1.);
+	float result = mix(distanceA, -distanceB, h ) + k * h * (1. - h);
+	/*float r = mix(distanceA.color.x, distanceB.color.x, h);
+  float g = mix(distanceA.color.y, distanceB.color.y, h);
+  float b = mix(distanceA.color.z, distanceB.color.z, h);
+  float a = mix(distanceA.color.w, distanceB.color.w, h);*/
+    return result;
+}
+
 int lastTransparentShape = -1;
 
 float _dep = 1;
 
-shape GetDist(vec4 p)
+
+
+float ParseInstruction (Instruction inst, vec4 p)
 {
-    //vec4 s = vec4(0,1,6. + sin(push.u_time)*3.,1); //Sphere. xyz is position w is radius
-    shape shapes[3];
-
-	shapes[0] = hyperSphere(p, 50, vec4(-1.));
-	shapes[0].dis *= -1.;
-
-	shapes[1] = hyperPlane(p, vec4(0,1,0,0), -2, vec4(0.1f,0.1f,0.5f,1));
-
-	//shapes[2] = hyperSphere(p - vec4(0, 1, 0, 0), 1, vec4(0,0,1,1));
-
-	float alpha = 1.;
-
-	vec4 sphS = vec4(1, 2, 1, 1);
-
-	shape sph = hyperSphere((p / sphS) - vec4(0, 1, 0, 0), 1, vec4(0,0,1, alpha));
-	sph.dis *= max(sphS.x, max(sphS.y, max(sphS.z, sphS.w)));
-
-
-	vec4 tesP = p - vec4(0, 1, 0, 0);
-	vec4 tesS = vec4(1, 1, 1, 1);
-	vec4 tesC = vec4(1, 1, 1, 1);
-
-	int tesCI = 0;
-	float tesCD = abs(tesP.x) - (tesS.x / 2);
-	if (tesCD < abs(tesP.y) - (tesS.y/ 2)) { tesCD = abs(tesP.y) - (tesS.y/ 2); tesCI = 1; }
-	if (tesCD < abs(tesP.z) - (tesS.z/ 2)) { tesCD = abs(tesP.z) - (tesS.z/ 2); tesCI = 2; }
-
-	if (tesCI == 0) tesC = vec4(1, 0, 0, 1);
-	if (tesCI == 1) tesC = vec4(0, 1, 0, 1);
-	if (tesCI == 2) tesC = vec4(0, 0, 1, 1);
-
-	shape tes = tesseract(tesP, tesS, tesC);
-
-	vec4 _p = p;
-
-	shape core2 = hyperSphere(p - vec4(0, 1, 0, 0), 0.65, vec4(0.0f,1.f,0.0f,1));
-
-	vec4 torP = p - vec4(-3 * 0.66f, 1, 0, 0);
-
-	//vec4 torP = p - vec4(-1, 1, 0, 0.);
-	shape tor = torusPrism(torP, 0.3, 1, _dep, vec4(1.f, 1.f, 0.f, alpha));
-
-	vec4 tetP = p - vec4(1, 3 * 0.25f, 0, 0);
-	//vec4 tetP = p - vec4(1, 1, 0, 0.);
-	shape tet = tetrahedronalPrism(tetP, _dep, vec4(1.f, 0.f, 1.f, alpha));
-
-	vec4 cylP = p - vec4(1, 1, 0, 0);
-	cylP = rotate4D(cylP, vec4(0), PI / 4, XW);
-	cylP = rotate4D(cylP, vec4(0), PI / 5, XZ);
-	shape cyl = tesseract(cylP, vec4(0.5, 0.5, 3, 5), vec4(0.4f, 0.9f, 0.7f, alpha));
-	//shape cyl = cylindricalPrism(cylP, vec2(0.5, 3), 5, vec4(0.4f, 0.9f, 0.7f, alpha));
-
-	//shape result = smoothUnionSDF(sph, tess, 0.5);
-
-	//result = smoothUnionSDF(result, tor, 0.5f);
-
-	//result = smoothUnionSDF(result, tet, 0.5f);
-
-	//result = smoothUnionSDF(result, cyl, 0.5f);
-
-	shape result = tes;
-	//shape result = unionSdf(sph, tess);
-	result = unionSdf(result, tor);
-	result = unionSdf(result, tet);
-	result = unionSdf(result, cyl);
-
-	//result = subtractSdf(result, core2);
-
-	//result = smoothUnionSDF(tor, tet, 0.5f);
-
-	//result = cubePrism(p - vec4(0,1,1,0), vec3(1,1,1), _dep, vec4(1.f, 1.f, 0.f, alpha));
-
-	//shape result = smoothUnionSDF(sph, core, 0.5);
-
-	if (instructions_data.length() > 0) {
-		vec4 _tesp = p;
-		_tesp -= instructions_data[2].valueA;
-		_tesp = rotate4D(_tesp, vec4(0),  -1 * instructions_data[1].valueA.x, ZW);
-		_tesp = rotate4D(_tesp, vec4(0), -1 * instructions_data[1].valueA.y, XY);
-		result = tesseract(_tesp, instructions_data[0].valueA, vec4(0.5f, 0.5f, 0.7f, 1));
+	vec4 _p = inst.valueA * (p - inst.valueB);
+	switch (inst.instructionType)
+	{
+		case 1:
+			return hyperSphere(_p);
+		case 2:
+			return tesseract(_p);
+		case 3:
+			vec4 n = normalize(inst.valueA * vec4(0,1,0,0));
+			return hyperPlane(p, n, inst.valueB.x);
+		case 4:
+			return tetrahedronalPrism(_p);
+		case 5:
+			return hyperCylinder(_p);
+		case 6:
+			return conePrism(_p);
+		case 7:
+			return cylindricalPrism(_p);
+		case 8:
+			return torusPrism(_p);
 	}
+	return 0;
+}
 
-	shapes[2] = result;
+Material materials[4];
 
-	//shapes[2] = sph;
+float ParseInstructions (vec4 pp, out int materialIndex, inout int index)
+{
+	vec4 p = pp;
+	int n = push.u_numInstructions;
 
-	//shapes[3] = core;
+	int operatorTypes[MAX_INSTRUCTION_DATA];
+	float ShapeAs[MAX_INSTRUCTION_DATA];
+	float ShapeBs[MAX_INSTRUCTION_DATA];
+	bool hasShapes[MAX_INSTRUCTION_DATA];
 
-    vec4 b = vec4(5, 0, 20, 0);
+	int pseudoRecursionDataIndex = 0;
+
+	operatorTypes[0] = 0;
+	ShapeAs[0] = 0;
+	ShapeBs[0] = 0;
+	hasShapes[0] = false;
+
+
+	float _shape = 0;
+
+	int j = 0;
+	int _j = 0;
+	int _jj = 0;
+
+	
+
+	for (int i = 0; i < n; i++)
+	{
+		index++;
+		j++;
+
+		int _opType = instructions_data[i].valueE % 64;
+		float _E_value = ((instructions_data[i].valueE - _opType) / 64) / 10000.0;
+
+		Instruction inst = Instruction(_opType, instructions_data[i].valueA, vec4(instructions_data[i].floatB, instructions_data[i].floatC, instructions_data[i].floatD, _E_value));
+		if (inst.instructionType == 21)
+		{
+			materialIndex = int(inst.valueB.x);
+		}
+		else if (inst.instructionType >= 13 && inst.instructionType <= 18)
+		{
+			operatorTypes[pseudoRecursionDataIndex] = inst.instructionType;
+			ShapeAs[pseudoRecursionDataIndex] = 0;
+			ShapeBs[pseudoRecursionDataIndex] = 0;
+			hasShapes[pseudoRecursionDataIndex] = false;
+			pseudoRecursionDataIndex++;
+			if (pseudoRecursionDataIndex >= MAX_INSTRUCTION_DATA) pseudoRecursionDataIndex = MAX_INSTRUCTION_DATA - 1;
+		}
+		else if (inst.instructionType >= 1 && inst.instructionType <= 8)
+		{
+			vec4 _p = inst.valueA * (p);
+			_shape = ParseInstruction(inst, p);
+
+			if (pseudoRecursionDataIndex == 0)
+			{
+				_p = inst.valueA * p;
+				float scalingFactor = length(_p);
+				_p = normalize(p) * scalingFactor;
+				_p = abs(_p / p);
+				scalingFactor = max(_p.x, max(_p.y, max(_p.z, _p.w)));
+				scalingFactor = max(scalingFactor, 1.0 / scalingFactor);
+				_shape /= scalingFactor;
+				break;
+			}
+			_j++;
+			for (int ii = pseudoRecursionDataIndex; ii >= 0; ii--)
+			{
+				_jj++;
+
+				_p = inst.valueA * p;
+				float scalingFactor = length(_p);
+				_p = normalize(p) * scalingFactor;
+				_p = abs(_p / p);
+				scalingFactor = max(_p.x, max(_p.y, max(_p.z, _p.w)));
+				scalingFactor = max(scalingFactor, 1.0 / scalingFactor);
+				_shape /= scalingFactor;
+
+				if (!hasShapes[pseudoRecursionDataIndex])
+				{
+					ShapeAs[pseudoRecursionDataIndex] = _shape;
+					break;
+				}
+				else
+				{
+					ShapeBs[pseudoRecursionDataIndex] = _shape;
+
+					int op = operatorTypes[pseudoRecursionDataIndex] * 2 - 27;
+					int op1 = op / abs(op);
+					int op2 = op - 2;
+					op2 = -1 * op2 / abs(op2);
+
+					_shape = max(ShapeAs[pseudoRecursionDataIndex] * op1, ShapeBs[pseudoRecursionDataIndex] * op1 * op2) * op1;
+
+					operatorTypes[pseudoRecursionDataIndex] = 0;
+					hasShapes[pseudoRecursionDataIndex] = false;
+					pseudoRecursionDataIndex--;
+				}
+			}
+
+
+			if (pseudoRecursionDataIndex < 0) break;
+		}
+	}
+	return _shape;
+}
+
+struct getDistOutput {
+	float dis;
+	int matIndex;
+};
+
+getDistOutput GetDist(vec4 p)
+{
+    getDistOutput shapes[2048];
+
+	shapes[0] = getDistOutput(hyperSphere(p / 100.0) * -100.0, -1);
+
+	int instMat = 0;
+	int instructionIndex = 0;
+	int shapeIndex = 1;
+
+	for (instructionIndex = 0; instructionIndex < push.u_numInstructions; instructionIndex++)
+	{
+		shapes[shapeIndex] = getDistOutput(ParseInstructions(p, instMat, instructionIndex), instMat);
+	}
 
     int index = 0;
 
     for(int i = 1; i < shapes.length(); i++) {
-		if (i != lastTransparentShape || shapes[i].color.w == 1.)
+		if (i != lastTransparentShape || materials[shapes[i].matIndex].diffuse.w == 1.)
 		index = (shapes[i].dis < shapes[index].dis) ? i : index;
 	}
 
-	if (shapes[index].color.w < 1. && shapes[index].color.w >= 0) lastTransparentShape = index;
+	if (materials[shapes[index].matIndex].diffuse.w < 1. && materials[shapes[index].matIndex].diffuse.w >= 0) lastTransparentShape = index;
 
     return shapes[index];
 }
 
 const int MAX_TRANSPARENT_SHAPES = 16;
 
-shape RayMarch(vec4 ro, vec4 rd) 
+float RayMarch(vec4 ro, vec4 rd, out Material _mat) 
 {
-    shape dO = shape(0, vec4(0.5f,0.5f,0.5f,1)); //Distance Origin
-	shape[MAX_TRANSPARENT_SHAPES] transparentShapes;
-	transparentShapes[0] = shape(0, vec4(-1.));
+    getDistOutput dO = getDistOutput(0, 0); //Distance Origin
+	Material[MAX_TRANSPARENT_SHAPES] transparentMats;
+	float[MAX_TRANSPARENT_SHAPES] transparentShapeDistances;
 	int nT = 0;
 	lastTransparentShape = -1;
     for(int i=0;i<MAX_STEPS;i++)
     {
 		if (nT >= MAX_TRANSPARENT_SHAPES) nT = MAX_TRANSPARENT_SHAPES - 1;
         vec4 p = ro + rd * dO.dis;
-        shape ds = GetDist(p); // ds is Distance Scene
+        getDistOutput ds = GetDist(p); // ds is Distance Scene
         dO.dis += ds.dis;
         if(dO.dis > MAX_DIST || ds.dis < SURFACE_DIST) {
-			if (ds.color.w < 1. && ds.color.w >= 0) {
-				transparentShapes[nT] = ds;
+			if (materials[ds.matIndex].diffuse.w < 1. && materials[ds.matIndex].diffuse.w >= 0) {
+				transparentMats[nT] = materials[ds.matIndex];
+				transparentShapeDistances[nT] = ds.dis;
 				nT = nT + 1;
 			}
 			else {
-				dO.color = ds.color;
-				if (ds.color != vec4(-1.))
+				if (ds.matIndex == -1)
 				{
+					_mat = Material(vec4(-1));
+				}
+				else
+				{
+					_mat = materials[ds.matIndex];
 					for (int j = 0; j < nT; j++)
 					{
-						if (transparentShapes[j].dis < dO.dis)
+						if (transparentShapeDistances[j] < dO.dis)
 						{
-							dO.color.x = mix(dO.color.x, transparentShapes[j].color.x, transparentShapes[j].color.w);
-							dO.color.y = mix(dO.color.y, transparentShapes[j].color.y, transparentShapes[j].color.w);
-							dO.color.z = mix(dO.color.z, transparentShapes[j].color.z, transparentShapes[j].color.w);
+							_mat.diffuse.x = mix(_mat.diffuse.x, transparentMats[j].diffuse.x, transparentMats[j].diffuse.w);
+							_mat.diffuse.y = mix(_mat.diffuse.y, transparentMats[j].diffuse.y, transparentMats[j].diffuse.w);
+							_mat.diffuse.z = mix(_mat.diffuse.z, transparentMats[j].diffuse.z, transparentMats[j].diffuse.w);
 						}
 					}
 				}
@@ -420,7 +535,7 @@ shape RayMarch(vec4 ro, vec4 rd)
 		}
     }
 	//dO.color = dO.color * vec4(mod(dO.dis / 1000, 10),mod(dO.dis / 100, 10),mod(dO.dis / 10, 10),1);
-    return dO;
+    return dO.dis;
 }
 
 vec4 getNormal(vec4 p)
@@ -465,7 +580,8 @@ float getLight (vec4 p)
 			vec4 normal = getNormal(p);
 
 			float dT = clamp(dot(normal, l), 0, 1);
-			float r = RayMarch(p + normal + SURFACE_DIST * 2, l).dis;
+			Material mat;
+			float r = RayMarch(p + normal + SURFACE_DIST * 2, l, mat);
 
 			if (r < length(lights[i].value.xyz - p.xyz)) dT *= 0.1;
 
@@ -517,7 +633,8 @@ float getLight3D (vec4 p)
 			normal = normalize(normal);
 
 			float dT = clamp(dot(normal, l), 0, 1);
-			float r = RayMarch(p + vec4(normal, 0) + SURFACE_DIST * 2, vec4(l, 0)).dis;
+			Material mat;
+			float r = RayMarch(p + vec4(normal, 0) + SURFACE_DIST * 2, vec4(l, 0), mat);
 
 			if (r < length(lights[i].value.xyz - p.xyz)) dT *= 0.1;
 
@@ -559,6 +676,11 @@ void main()
 	
 	rd = normalize(rd);
 
+	materials[0] = Material(vec4(0.1, 0.1, 0.1, 1));
+	materials[1] = Material(vec4(0.1, 0.1, 0.5, 1));
+	materials[2] = Material(vec4(0, 0.25, 0.5, 1));
+	materials[3] = Material(vec4(1, 0, 0, 1));
+
 	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.5 + 0.25 * (sin(push.u_time / 4) + 1)), XY);
 	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.45 + 0.5 * 0.5 * (sin(push.u_time / 4.) + 2)), XY);
 	//rd = rotate4D(rd, vec4(0), atan(ro.y/ro.z), XW);
@@ -580,19 +702,21 @@ void main()
 	//ro = rotate4D(ro, vec4(0), t, YW);
 	//rd = rotate4D(rd, vec4(0), t, YW);
 	//rd = normalize(rd);
-
-    shape d = RayMarch(ro,rd); // Distance
+	Material outputMat;// = Material(vec4(0.1, 0.1, 0.1, 1));
+    float d = RayMarch(ro,rd, outputMat); // Distance
     
-	float dif = getLight(ro + rd * d.dis);
+	float dif = getLight(ro + rd * d);
 	//float dif = getLight3D(ro + rd * d.dis);
 
-    vec4 color = d.color;
-	if (d.color == vec4(-1.))
+    vec4 color = outputMat.diffuse;
+	if (color == vec4(-1.))
 	{
 		color = vec4(0.1, 0.1, 0.1 ,1);
 		//color = vec4(camdep, camdep, camdep, 1);
 	}
-	else color.xyz *= dif;
-
+	else
+	{
+		color.xyz *= dif;
+	}
     outColor = color;
 }

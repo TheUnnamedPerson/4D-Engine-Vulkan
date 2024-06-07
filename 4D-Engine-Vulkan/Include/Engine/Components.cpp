@@ -2,6 +2,7 @@ module;
 
 #include <vector>
 #include <string>
+#include <math.h>
 
 #include <iostream>
 
@@ -34,23 +35,23 @@ namespace Engine4D
 		this->shapes.push_back(shape);
 	}
 
-	Material::Material()
-	{
-		this->color = Vector4();
-	}
-
-	Material::Material(Vector4 color)
-	{
-		this->color = color;
-	}
-
 	MeshRenderer::MeshRenderer(GameObject* gameObject) : MonoBehavior(gameObject)
 	{
 		this->mesh = Mesh();
-		this->material = Material();
+		this->material = gameObject->engine->AddMaterial();
+		if (this->material == nullptr)
+		{
+			std::cout << "Material is null" << std::endl;
+		}
 	}
 
-	MeshRenderer::MeshRenderer(GameObject* gameObject, Mesh mesh, Material material) : MonoBehavior(gameObject)
+	MeshRenderer::MeshRenderer(GameObject* gameObject, Material* material) : MonoBehavior(gameObject)
+	{
+		this->mesh = Mesh();
+		this->material = material;
+	}
+
+	MeshRenderer::MeshRenderer(GameObject* gameObject, Mesh mesh, Material* material) : MonoBehavior(gameObject)
 	{
 		this->mesh = mesh;
 		this->material = material;
@@ -67,9 +68,9 @@ namespace Engine4D
 		return "MeshRenderer";
 	}
 
-	std::vector<Instruction> MeshRenderer::getInstructions()
+	std::vector<InstructionData> MeshRenderer::getInstructions()
 	{
-		std::vector<Instruction> instructions = std::vector<Instruction>();
+		std::vector<InstructionData> instructions = std::vector<InstructionData>();
 
 		int n = this->mesh.shapes.size();
 
@@ -80,71 +81,36 @@ namespace Engine4D
 		else
 		{
 			Instruction initInstruction = Instruction();
-			initInstruction.type = 11;
-			initInstruction.valueA = (glm::vec4)transform->scale;
-			initInstruction.valueB = glm::vec4(0);
-			instructions.push_back(initInstruction);
-
-			initInstruction = Instruction();
-			initInstruction.type = 10;
-			initInstruction.valueA = (glm::vec4)transform->rotation;
-			initInstruction.valueB = glm::vec4(0);
-			instructions.push_back(initInstruction);
-
-			initInstruction = Instruction();
-			initInstruction.type = 9;
-			initInstruction.valueA = (glm::vec4)transform->position;
-			initInstruction.valueB = glm::vec4(0);
-			instructions.push_back(initInstruction);
-			if (n == 1)
-			{
-				Shape* shape = this->mesh.shapes[0];
-
-				Instruction instruction = Instruction();
-				instruction.type = 11;
-				instruction.valueA = (glm::vec4)shape->scale;
-				instruction.valueB = glm::vec4(0);
-				instructions.push_back(instruction);
-
-				instruction = Instruction();
-				instruction.type = 10;
-				instruction.valueA = (glm::vec4)shape->rotation;
-				instruction.valueB = glm::vec4(0);
-				instructions.push_back(instruction);
-
-				instruction = Instruction();
-				instruction.type = 9;
-				instruction.valueA = (glm::vec4)shape->position;
-				instruction.valueB = glm::vec4(0);
-				instructions.push_back(instruction);
-
-				instruction = Instruction();
-				instruction = shape->getInstruction();
-				instruction.valueB = (glm::vec4)this->material.color;
-				instructions.push_back(instruction);
-
-				return instructions;
-			}
+			initInstruction.type = 21;
+			initInstruction.valueA = glm::mat4(0);
+			initInstruction.valueB = glm::vec4(2, 0, 0, 0);
+			//initInstruction.valueB = (glm::vec4)material.color;
+			instructions.push_back(InstructionToData(initInstruction));
 
 			for (int i = 0; i < n; i++)
 			{
 				if (i < n - 1)
 				{
 					Instruction unionInstruction = Instruction();
-					unionInstruction.type = 9;
-					unionInstruction.valueA = glm::vec4(0);
+					unionInstruction.type = 13;
+					unionInstruction.valueA = glm::mat4(0);
 					unionInstruction.valueB = glm::vec4(0);
-					instructions.push_back(unionInstruction);
+
+					instructions.push_back(InstructionToData(unionInstruction));
 				}
 
 				Shape* shape = this->mesh.shapes[i];
 
 				Instruction shapeInstruction = Instruction();
 				shapeInstruction = shape->getInstruction();
-				shapeInstruction.valueB = (glm::vec4)this->material.color;
-				instructions.push_back(shapeInstruction);
+				shapeInstruction.valueA = transform->transformationMatrix * shapeInstruction.valueA;
+				shapeInstruction.valueB = (glm::vec4)(transform->position) + shapeInstruction.valueB;
+				//shapeInstruction.valueB = (transform->transformationMatrix * shapeInstruction.valueB) + transform->positionTransformed;
+				instructions.push_back(InstructionToData(shapeInstruction));
 			}
 		}
+		std::cout << "\trb.position: " << this->transform->position << std::endl;
+		std::cout << "\trb.rotation: " << this->transform->rotation << " ; " << this->transform->rotationW << std::endl;
 		return instructions;
 	}
 
@@ -160,6 +126,13 @@ namespace Engine4D
 		velocity += gravity * gameObject->engine->Time->deltaTime;
 		transform->position += velocity * gameObject->engine->Time->deltaTime;
 		transform->rotation += rotationalVelocity * gameObject->engine->Time->deltaTime;
+		transform->rotation.x = std::fmod(transform->rotation.x, 2 * PI);
+		transform->rotation.y = std::fmod(transform->rotation.y, 2 * PI);
+		transform->rotation.z = std::fmod(transform->rotation.z, 2 * PI);
+		transform->rotationW += rotationalVelocityW * gameObject->engine->Time->deltaTime;
+		transform->rotationW.x = std::fmod(transform->rotationW.x, 2 * PI);
+		transform->rotationW.y = std::fmod(transform->rotationW.y, 2 * PI);
+		transform->rotationW.z = std::fmod(transform->rotationW.z, 2 * PI);
 
 		if (transform->position.y < -0.5)
 		{
@@ -167,6 +140,10 @@ namespace Engine4D
 			velocity.y = 0;
 		}
 
+		//MeshRenderer* rend = gameObject->GetComponent<MeshRenderer>();
+		//if (rend != nullptr) rend->
+
+		transform->setTransformationMatrix();
 		gameObject->engine->sceneChanged = true;
 
 		countdowntime += gameObject->engine->Time->deltaTime;

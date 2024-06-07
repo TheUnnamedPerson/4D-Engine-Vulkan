@@ -9,6 +9,10 @@ import Engine4D.Structs;
 
 namespace Engine4D {
 
+	export constexpr float PI = 3.14159265359f;
+
+	export class Matrix;
+
 	export class Vector2
 	{
 		public:
@@ -40,7 +44,7 @@ namespace Engine4D {
 		Vector2 operator-=(const float& other);
 		Vector2 operator*=(const float& other);
 		Vector2 operator/=(const float& other);
-		
+
 		friend std::ostream& operator<<(std::ostream& os, const Vector2& vec);
 	};
 
@@ -120,6 +124,8 @@ namespace Engine4D {
 		Vector4 abs();
 		float length();
 		Vector4 normalized();
+		float minValue();
+		float maxValue();
 
 		Vector2 xy();
 		Vector2 xz();
@@ -153,6 +159,8 @@ namespace Engine4D {
 		Vector4 operator*=(const float& other);
 		Vector4 operator/=(const float& other);
 
+		Vector4 operator*(const Matrix& other) const;
+
 		friend std::ostream& operator<<(std::ostream& os, const Vector4& vec);
 
 		explicit operator glm::vec4() const { return glm::vec4(x, y, z, w); };
@@ -166,46 +174,364 @@ namespace Engine4D {
 	export float dot(Vector4 a, Vector4 b);
 	export Vector4 cross(Vector4 a, Vector4 b);
 
+	class Matrix
+	{
+
+		public:
+
+		enum RotationMatrix
+		{
+			Flat = 1,
+			X = 2,
+			Y = 3,
+			Z = 4,
+			ZW = 5,
+			YW = 6,
+			YZ = 7,
+			XW = 8,
+			XZ = 9,
+			XY = 10
+		};
+
+		float* matrix;
+		int rows, columns;
+
+		Matrix()
+		{
+			rows = 4;
+			columns = 4;
+			matrix = new float[16];
+		}
+		Matrix(int _columns, int _rows)
+		{
+			rows = _rows;
+			columns = _columns;
+			matrix = new float[_rows * _columns];
+		}
+
+		~Matrix()
+		{
+			delete[] matrix;
+		}
+
+		Matrix(Matrix const& other) {
+			this->rows = other.rows;
+			this->columns = other.columns;
+			this->matrix = new float[this->rows * this->columns];
+			(void*)memcpy_s(this->matrix, this->rows * this->columns * sizeof(float), other.matrix, other.rows * other.columns * sizeof(float));
+		}
+
+		Matrix(glm::mat4 mat)
+		{
+			rows = 4;
+			columns = 4;
+			matrix = new float[16];
+			for (int i = 0; i < 4; i++)
+			{
+				for (int ii = 0; ii < 4; ii++)
+				{
+					matrix[i * 4 + ii] = mat[i][ii];
+				}
+			}
+		}
+
+		Matrix& operator=(Matrix const& other) {
+
+			delete[] this->matrix;
+
+			this->rows = other.rows;
+			this->columns = other.columns;
+			this->matrix = new float[this->rows * this->columns];
+
+			(void*)memcpy_s(this->matrix, this->rows * this->columns * sizeof(float), other.matrix, other.rows * other.columns * sizeof(float));
+
+			return *this;
+		}
+
+		float& operator ()(int x, int y) {
+			return matrix[y * columns + x];
+		}
+
+		float operator ()(int x, int y) const {
+			return matrix[y * columns + x];
+		}
+
+		static Matrix Zero(int _columns, int _rows)
+		{
+			Matrix result(_columns, _rows);
+			for (int i = 0; i < _rows; i++)
+			{
+				for (int j = 0; j < _columns; j++)
+				{
+					result.matrix[i * _columns + j] = 0;
+				}
+			}
+			return result;
+		}
+
+		static Matrix One(int _columns, int _rows)
+		{
+			Matrix result(_columns, _rows);
+			for (int i = 0; i < _rows; i++)
+			{
+				for (int j = 0; j < _columns; j++)
+				{
+					result.matrix[i * _columns + j] = 1;
+				}
+			}
+			return result;
+		}
+
+		static Matrix Diagonal(int length, float value)
+		{
+			Matrix result(length, length);
+			for (int i = 0; i < length; i++)
+			{
+				for (int j = 0; j < length; j++)
+				{
+					if (i == j)
+					{
+						result.matrix[i * length + j] = value;
+					}
+					else
+					{
+						result.matrix[i * length + j] = 0;
+					}
+				}
+			}
+			return result;
+		}
+
+		static Matrix Identity(int length)
+		{
+			return Diagonal(length, 1);
+		}
+
+		static Matrix RotationMatrix(RotationMatrix matrix, float theta)
+		{
+			int n = 0;
+			switch (matrix)
+			{
+				case RotationMatrix::Flat:
+					n = 2;
+					break;
+				case RotationMatrix::X:
+				case RotationMatrix::Y:
+				case RotationMatrix::Z:
+					n = 4;
+					break;
+				case RotationMatrix::ZW:
+				case RotationMatrix::YW:
+				case RotationMatrix::YZ:
+				case RotationMatrix::XW:
+				case RotationMatrix::XZ:
+				case RotationMatrix::XY:
+					n = 4;
+					break;
+				default:
+					throw "Invalid Rotation Matrix";
+					break;
+			}
+			Matrix result = Zero(n, n);
+
+			switch (matrix)
+			{
+				case RotationMatrix::Flat:
+					result(0, 0) = cos(theta); result(0, 1) = -sin(theta);
+					result(1, 0) = sin(theta); result(1, 1) = cos(theta);
+					break;
+				case RotationMatrix::X:
+					result(0, 0) = 1;
+					result(1, 1) = cos(theta); result(1, 2) = -sin(theta);
+					result(2, 1) = sin(theta); result(2, 2) = cos(theta);
+					result(3, 3) = 1;
+					break;
+				case RotationMatrix::Y:
+					result(0, 0) = cos(theta); result(0, 2) = sin(theta);
+					result(1, 1) = 1;
+					result(2, 0) = -sin(theta); result(2, 2) = cos(theta);
+					result(3, 3) = 1;
+					break;
+				case RotationMatrix::Z:
+					result(0, 0) = cos(theta); result(0, 1) = -sin(theta);
+					result(1, 0) = sin(theta); result(1, 1) = cos(theta);
+					result(2, 2) = 1;
+					result(3, 3) = 1;
+					break;
+				case RotationMatrix::ZW:
+					result(0, 0) = cos(theta); result(0, 1) = -sin(theta);
+					result(1, 0) = sin(theta); result(1, 1) = cos(theta);
+					result(2, 2) = 1;
+					result(3, 3) = 1;
+					break;
+				case RotationMatrix::YW:
+					result(0, 0) = cos(theta); result(0, 2) = -sin(theta);
+					result(1, 1) = 1;
+					result(2, 0) = sin(theta); result(2, 2) = cos(theta);
+					result(3, 3) = 1;
+					break;
+				case RotationMatrix::YZ:
+					result(0, 0) = cos(theta); result(0, 3) = -sin(theta);
+					result(1, 1) = 1;
+					result(2, 2) = 1;
+					result(3, 0) = sin(theta); result(3, 3) = cos(theta);
+					break;
+				case RotationMatrix::XW:
+					result(0, 0) = 1;
+					result(1, 1) = cos(theta); result(1, 2) = -sin(theta);
+					result(2, 1) = sin(theta); result(2, 2) = cos(theta);
+					result(3, 3) = 1;
+					break;
+				case RotationMatrix::XZ:
+					result(0, 0) = 1;
+					result(1, 1) = cos(theta); result(1, 3) = -sin(theta);
+					result(2, 2) = 1;
+					result(3, 1) = sin(theta); result(3, 3) = cos(theta);
+					break;
+				case RotationMatrix::XY:
+					result(0, 0) = 1;
+					result(1, 1) = 1;
+					result(2, 2) = cos(theta); result(2, 3) = -sin(theta);
+					result(3, 2) = sin(theta); result(3, 3) = cos(theta);
+					break;
+				default:
+					throw "Invalid Rotation Matrix";
+					break;
+			}
+
+			//round all values to nearest 10000th to avoid floating point errors
+			for (int i = 0; i < n; i++)
+			{
+				for (int j = 0; j < n; j++)
+				{
+					result(i, j) = round(result(i, j) * 10000) / 10000;
+				}
+			}
+
+			return result;
+		}
+
+		static Matrix RotationMatrixEuler(Vector3 EulerAngles)
+		{
+			return RotationMatrix(RotationMatrix::X, EulerAngles.x) * RotationMatrix(RotationMatrix::Y, EulerAngles.y) * RotationMatrix(RotationMatrix::Z, EulerAngles.z);
+		}
+
+		static Matrix RotationMatrixEuler4D(Vector4 EulerAngles)
+		{
+			return RotationMatrix(RotationMatrix::XW, EulerAngles.x) * RotationMatrix(RotationMatrix::YW, EulerAngles.y) * RotationMatrix(RotationMatrix::ZW, EulerAngles.z) * RotationMatrix(RotationMatrix::XY, EulerAngles.w);
+		}
+
+		static Matrix RotationMatrixDoubleEuler4D(Vector3 RotationAngles, Vector3 RotationAnglesW)
+		{
+			Matrix xwMatrix = RotationMatrix(RotationMatrix::XW, RotationAngles.x);
+			Matrix ywMatrix = RotationMatrix(RotationMatrix::YW, RotationAngles.y);
+			Matrix zwMatrix = RotationMatrix(RotationMatrix::ZW, RotationAngles.z);
+			Matrix xyMatrix = RotationMatrix(RotationMatrix::XY, RotationAnglesW.x);
+			Matrix xzMatrix = RotationMatrix(RotationMatrix::XZ, RotationAnglesW.y);
+			Matrix yzMatrix = RotationMatrix(RotationMatrix::YZ, RotationAnglesW.z);
+
+			return xwMatrix * ywMatrix * zwMatrix * xyMatrix * xzMatrix * yzMatrix;
+		}
+
+		Vector4 operator*(const Vector4& other) const;
+		Matrix operator*(const Matrix& other) const;
+		friend std::ostream& operator<<(std::ostream& Str, Matrix const& v);
+
+		explicit operator glm::mat4() const { glm::mat4 result; for (int i = 0; i < 4; i++) for (int ii = 0; ii < 4; ii++) result[i][ii] = (*this)(i, ii); return result; };
+	};
+
 	export class Shape
 	{
 		public:
-			int shapeType;
-			Vector4 position;
-			Vector4 rotation;
-			Vector4 scale;
+		int shapeType;
+		Vector4 position;
+		Vector3 rotation;
+		Vector3 rotationW;
+		Vector4 scale;
 
-			Shape();
-			Shape(Vector4 position, Vector4 rotation, Vector4 scale);
+		Matrix rotationMatrix;
+		glm::mat4 transformationMatrix;
+		glm::vec4 positionTransformed;
 
-			virtual Instruction getInstruction() = 0;
 
-			virtual float SDF(Vector4 point) = 0;
+		Shape();
+		Shape(Vector4 position, Vector3 rotation, Vector4 scale);
+		Shape(Vector4 position, Vector3 rotation, Vector3 rotationW, Vector4 scale);
+
+		void setRotationMatrix() { rotationMatrix = Matrix::RotationMatrixEuler(rotation); }
+		void setRotationMatrix4D() { rotationMatrix = Matrix::RotationMatrixDoubleEuler4D(rotation, rotationW); }
+
+		void setTransformationMatrix()
+		{
+			setRotationMatrix();
+			glm::mat4 _size = glm::mat4(1.0f);
+			_size[0][0] = this->scale.x;
+			_size[1][1] = this->scale.y;
+			_size[2][2] = this->scale.z;
+			_size[3][3] = 1;
+			transformationMatrix = (glm::mat4)rotationMatrix * _size;
+			positionTransformed = transformationMatrix * (glm::vec4)position;
+		}
+
+		void setTransformationMatrix4D()
+		{
+			setRotationMatrix4D();
+			glm::mat4 _size = glm::mat4(1.0f);
+			_size[0][0] = this->scale.x;
+			_size[1][1] = this->scale.y;
+			_size[2][2] = this->scale.z;
+			_size[3][3] = this->scale.w;
+			transformationMatrix = (glm::mat4)rotationMatrix * _size;
+			positionTransformed = transformationMatrix * (glm::vec4)position;
+
+		}
+
+		virtual Instruction getInstruction() = 0;
+
+		virtual float SDF(Vector4 point) = 0;
 	};
 
 	export class HyperSphere : public Shape
 	{
 		public:
-			float radius;
+		float radius = 1;
 
-			HyperSphere();
-			HyperSphere(Vector4 position, Vector4 rotation, Vector4 scale, float radius);
+		HyperSphere();
+		HyperSphere(Vector4 position, Vector3 rotation, Vector4 scale);
+		HyperSphere(Vector4 position, Vector3 rotation, Vector3 rotationW, Vector4 scale);
 
-			Instruction getInstruction() override;
+		Instruction getInstruction() override;
 
-			float SDF(Vector4 point) override;
+		float SDF(Vector4 point) override;
 	};
 
 	export class Tesseract : public Shape
 	{
 		public:
-			Vector4 size;
+		Vector4 size = Vector4(1, 1, 1, 1);
 
-			Tesseract();
-			Tesseract(Vector4 position, Vector4 rotation, Vector4 scale, Vector4 size);
+		Tesseract();
+		Tesseract(Vector4 position, Vector3 rotation, Vector4 scale);
+		Tesseract(Vector4 position, Vector3 rotation, Vector3 rotationW, Vector4 scale);
 
-			Instruction getInstruction() override;
+		Instruction getInstruction() override;
 
-			float SDF(Vector4 point) override;
+		float SDF(Vector4 point) override;
 	};
-	
+
+	export class HyperPlane : public Shape
+	{
+		public:
+		Vector4 normal = Vector4(0, 1, 0, 0);
+
+		HyperPlane();
+		HyperPlane(Vector4 position, Vector3 rotation);
+		HyperPlane(Vector4 position, Vector3 rotation, Vector3 rotationW);
+		HyperPlane(Vector4 position, Vector4 normal);
+
+		Instruction getInstruction() override;
+
+		float SDF(Vector4 point) override;
+	};
+
 }
