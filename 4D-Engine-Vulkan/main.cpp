@@ -47,8 +47,8 @@ int main() {
 
 		Engine4D::MeshRenderer* rend = engine.root->GetChild(0)->AddComponent<Engine4D::MeshRenderer>();
 		rend->AddShape(new Engine4D::Tesseract());
-		rend->material->color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-		rend->material->index = 2;
+		//rend->material->color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+		//rend->material->index = 2;
 
 		rend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
 

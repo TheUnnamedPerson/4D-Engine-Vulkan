@@ -214,7 +214,7 @@ namespace Engine4D
 		gameObjects.push_back(gameObject);
 	}
 
-	Material* Engine::AddMaterial()
+	/*Material* Engine::AddMaterial()
 	{
 		if (materialCount >= MAX_MATERIAL_COUNT)
 		{
@@ -226,6 +226,6 @@ namespace Engine4D
 		materials.push_back(result);
 		materialCount++;
 		return result;
-	}
+	}*/
 
 }

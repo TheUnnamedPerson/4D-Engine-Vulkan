@@ -111,6 +111,8 @@ namespace Engine4D {
 		GameObject* gameObject;
 		Transform* transform;
 
+		std::string name = "Component";
+
 		Component() = delete;
 		Component(GameObject* gameObject) { this->gameObject = gameObject; this->transform = &(gameObject->transform); }
 
@@ -160,8 +162,8 @@ namespace Engine4D {
 		int instructionCount = 0;
 		std::vector<InstructionData> instructions;
 
-		std::vector<Material*> materials;
-		int materialCount = 0;
+		//std::vector<Material*> materials;
+		//int materialCount = 0;
 
 		void Initialize();
 
@@ -172,7 +174,7 @@ namespace Engine4D {
 		void LateUpdate();
 
 		void AddGameObject(GameObject** gameObject);
-		Material* AddMaterial();
+		//Material* AddMaterial();
 	};
 
 

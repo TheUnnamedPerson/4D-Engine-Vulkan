@@ -38,7 +38,9 @@ namespace Engine4D
 	MeshRenderer::MeshRenderer(GameObject* gameObject) : MonoBehavior(gameObject)
 	{
 		this->mesh = Mesh();
-		this->material = gameObject->engine->AddMaterial();
+		this->name = "MeshRenderer";
+		//this->material = gameObject->engine->AddMaterial();
+		this->material = nullptr;
 		if (this->material == nullptr)
 		{
 			std::cout << "Material is null" << std::endl;
@@ -117,6 +119,7 @@ namespace Engine4D
 	RigidBody::RigidBody(GameObject* gameObject) : MonoBehavior(gameObject)
 	{
 		this->gravity = Vector4(0, -9.8f, 0, 0);
+		this->name = "RigidBody";
 	}
 
 	void RigidBody::Update()

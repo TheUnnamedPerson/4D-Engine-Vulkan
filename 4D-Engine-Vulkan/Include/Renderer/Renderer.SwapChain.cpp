@@ -76,6 +76,9 @@ namespace Engine4D {
             VK_TRUE,
             std::numeric_limits<uint64_t>::max());
 
+		std::cout << "Semaphore - " << currentFrame << " - " << imageAvailableSemaphores[currentFrame] << std::endl;
+		std::cout << VK_NULL_HANDLE << std::endl;
+
         VkResult result = vkAcquireNextImageKHR(
             device.device(),
             swapChain,

@@ -27,7 +27,7 @@ namespace Engine4D
 
     */
 
-    export constexpr int MAX_INSTRUCTIONS = 10000;
+    export constexpr int MAX_INSTRUCTIONS = 200;
 
     export struct Instruction {
         uint8_t type;

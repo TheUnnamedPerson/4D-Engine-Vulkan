@@ -2,8 +2,8 @@
 
 precision highp float; 
 
-const int MAX_INSTRUCTIONS = 10000;
-const int MAX_INSTRUCTION_DATA = 16;
+const int MAX_INSTRUCTIONS = 200;
+const int MAX_INSTRUCTION_DATA = 8;
 
 /*
 uniform vec2 u_resolution;  // Width and height of the shader
@@ -463,6 +463,8 @@ getDistOutput GetDist(vec4 p)
 {
     getDistOutput shapes[2048];
 
+	int shapesCount = 1;
+
 	shapes[0] = getDistOutput(hyperSphere(p / 100.0) * -100.0, -1);
 
 	int instMat = 0;
@@ -472,11 +474,19 @@ getDistOutput GetDist(vec4 p)
 	for (instructionIndex = 0; instructionIndex < push.u_numInstructions; instructionIndex++)
 	{
 		shapes[shapeIndex] = getDistOutput(ParseInstructions(p, instMat, instructionIndex), instMat);
+		shapeIndex++;
+		shapesCount++;
 	}
+
+	instMat = 2;
+
+	//materials[0] = Material(vec4(vec3(shapesCount / 5.0, shapesCount / 10.0, shapesCount / 20.0), 1));
+
+
 
     int index = 0;
 
-    for(int i = 1; i < shapes.length(); i++) {
+    for(int i = 1; i < shapesCount; i++) {
 		if (i != lastTransparentShape || materials[shapes[i].matIndex].diffuse.w == 1.)
 		index = (shapes[i].dis < shapes[index].dis) ? i : index;
 	}
@@ -690,10 +700,6 @@ void main()
 	//float t = push.u_time / 0.33;
 	float t = push.u_rot;
 
-	//ro.w = 0.5;
-	//ro.w = sin(t / 2);
-
-	//ro = rotate4D(ro, ro, t, YW);
 	rd = rotate4D(rd, vec4(0), -t, YW);
 	//vec4 camPos = rotate4D(push.u_cam, vec4(0), t, YW);
 	vec4 camPos = push.u_cam;
@@ -711,7 +717,8 @@ void main()
     vec4 color = outputMat.diffuse;
 	if (color == vec4(-1.))
 	{
-		color = vec4(0.1, 0.1, 0.1 ,1);
+		color = materials[0].diffuse;
+		//color = vec4(0.1, 0.1, 0.1 ,1);
 		//color = vec4(camdep, camdep, camdep, 1);
 	}
 	else
