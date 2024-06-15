@@ -15,6 +15,8 @@ namespace Engine4D
 	{
 		public:
 		Vector4 diffuse;
+		//float shininess;
+		float ambient = 0.9; //0-1;
 
 		int index;
 
@@ -30,12 +32,14 @@ namespace Engine4D
 	export struct MaterialData
 	{
 		alignas(16) glm::vec4 diffuse;
+		alignas(4) float ambient;
 	};
 
 	export MaterialData MaterialToData(Material* material)
 	{
 		MaterialData data;
 		data.diffuse = (glm::vec4)material->diffuse;
+		data.ambient = material->ambient;
 		return data;
 	}
 

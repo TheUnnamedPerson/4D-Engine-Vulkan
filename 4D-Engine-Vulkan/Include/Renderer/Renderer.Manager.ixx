@@ -38,6 +38,8 @@ namespace Engine4D {
 		void (*main_Update)();
 		void (*main_Late_Update)();
 
+		rWindow window{ WIDTH, HEIGHT, "Engine4D" };
+
 		static constexpr int WIDTH = 800;
 		static constexpr int HEIGHT = 600;
 
@@ -68,7 +70,6 @@ namespace Engine4D {
 		private:
 		void loadModels();
 
-		rWindow window{ WIDTH, HEIGHT, "Engine4D" };
 		rDevice device{ window };
 		rRendering renderer = rRendering(window, device);
 		std::unique_ptr<rModel> model;

@@ -39,6 +39,7 @@ struct Instruction
 
 struct Material {
 	vec4 diffuse;
+	float ambient;
 };
 
 layout(set = 0, binding = 0) buffer InstructionsBuffer
@@ -46,7 +47,7 @@ layout(set = 0, binding = 0) buffer InstructionsBuffer
 	InstructionData instructions_data[MAX_INSTRUCTIONS];
 };
 
-layout(set = 0, binding = 1) uniform MaterialsBuffer
+layout(set = 1, binding = 0) uniform MaterialsBuffer
 {
 	Material materials_data[MAX_MATERIALS];
 };
@@ -473,18 +474,17 @@ shapeData GetDist(vec4 p)
 
 	int totalShapesForInstructions = 1;
 
-	shapes[0] = shapeData(hyperSphere(p / 100.0) * -100.0, -1);
+	shapes[0] = shapeData(hyperSphere(p / 100.0) * -100.0, 0);
 
-	int instMat = 0;
 	int instructionIndex = 0;
 	int shapeIndex = 1;
 
 	//getDistOutput curShape = getDistOutput(0, 0);
-	//for (instructionIndex = 0; instructionIndex < push.u_numInstructions; instructionIndex++)
-	for (instructionIndex = 0; totalShapesForInstructions <= 2; instructionIndex++)
+	//for (instructionIndex = 0; totalShapesForInstructions <= 2; instructionIndex++)
+	for (instructionIndex = 0; instructionIndex < push.u_numInstructions; instructionIndex++)
 	{
 		totalShapesForInstructions++;
-		shapes[shapeIndex] = ParseInstructions(p, instMat, instructionIndex);
+		shapes[shapeIndex] = ParseInstructions(p, 0, instructionIndex);
 		instructionIndex--;
 		shapeIndex++;
 	}
@@ -515,11 +515,11 @@ shapeData GetDist(vec4 p)
     int index = 0;
 
     for(int i = 1; i < totalShapesForInstructions; i++) {
-		if (i != lastTransparentShape || materials[shapes[i].matIndex].diffuse.w == 1.)
+		if (i != lastTransparentShape || materials_data[shapes[i].matIndex].diffuse.w == 1.)
 		index = (shapes[i].dis < shapes[index].dis) ? i : index;
 	}
 
-	if (materials[shapes[index].matIndex].diffuse.w < 1. && materials[shapes[index].matIndex].diffuse.w >= 0) lastTransparentShape = index;
+	if (materials_data[shapes[index].matIndex].diffuse.w < 1. && materials_data[shapes[index].matIndex].diffuse.w >= 0) lastTransparentShape = index;
 
 	//if (instructionIndex > 8) instructionIndex = 8;
 	//if (index != 0) shapes[index].matIndex = instructionIndex;
@@ -543,19 +543,19 @@ float RayMarch(vec4 ro, vec4 rd, out Material _mat)
         shapeData ds = GetDist(p); // ds is Distance Scene
         dO.dis += ds.dis;
         if(dO.dis > MAX_DIST || ds.dis < SURFACE_DIST) {
-			if (materials[ds.matIndex].diffuse.w < 1. && materials[ds.matIndex].diffuse.w >= 0) {
-				transparentMats[nT] = materials[ds.matIndex];
+			if (materials_data[ds.matIndex].diffuse.w < 1. && materials_data[ds.matIndex].diffuse.w >= 0) {
+				transparentMats[nT] = materials_data[ds.matIndex];
 				transparentShapeDistances[nT] = ds.dis;
 				nT = nT + 1;
 			}
 			else {
 				if (ds.matIndex == -1)
 				{
-					_mat = Material(vec4(-1));
+					_mat = Material(vec4(vec3(0.1), 1), 0);
 				}
 				else
 				{
-					_mat = materials[ds.matIndex];
+					_mat = materials_data[ds.matIndex];
 					for (int j = 0; j < nT; j++)
 					{
 						if (transparentShapeDistances[j] < dO.dis)
@@ -677,7 +677,7 @@ float getLight3D (vec4 p)
 			Material mat;
 			float r = RayMarch(p + vec4(normal, 0) + SURFACE_DIST * 2, vec4(l, 0), mat);
 
-			if (r < length(lights[i].value.xyz - p.xyz)) dT *= 0.1;
+			if (r < length(lights[i].value.xyz - p.xyz)) dT *= 0.5;
 
 			if (dT > dif)
 			{
@@ -717,15 +717,15 @@ void main()
 	
 	rd = normalize(rd);
 
-	materials[0] = Material(vec4(0.1, 0.1, 0.1, 1));
-	materials[1] = Material(vec4(0.0, 0.25, 0.25, 1));
-	materials[2] = Material(vec4(0, 0.0, 1, 1));
-	materials[3] = Material(vec4(1, 0, 0, 1));
-	materials[4] = Material(vec4(0, 1, 0, 1));
-	materials[5] = Material(vec4(0, 0, 1, 1));
-	materials[6] = Material(vec4(1, 1, 0, 1));
-	materials[7] = Material(vec4(0, 1, 1, 1));
-	materials[8] = Material(vec4(1, 0, 1, 1));
+	materials[0] = Material(vec4(0.1, 0.1, 0.1, 1), 0);
+	materials[1] = Material(vec4(0.0, 0.25, 0.25, 1), 0.9);
+	materials[2] = Material(vec4(0, 0.0, 1, 1), 0.9);
+	materials[3] = Material(vec4(1, 0, 0, 1), 0.9);
+	materials[4] = Material(vec4(0, 1, 0, 1), 0.9);
+	materials[5] = Material(vec4(0, 0, 1, 1), 0.9);
+	materials[6] = Material(vec4(1, 1, 0, 1), 0.9);
+	materials[7] = Material(vec4(0, 1, 1, 1), 0.9);
+	materials[8] = Material(vec4(1, 0, 1, 1), 0.9);
 
 	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.5 + 0.25 * (sin(push.u_time / 4) + 1)), XY);
 	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.45 + 0.5 * 0.5 * (sin(push.u_time / 4.) + 2)), XY);
@@ -751,15 +751,17 @@ void main()
 	//float dif = getLight3D(ro + rd * d.dis);
 
     vec4 color = outputMat.diffuse;
-	if (color == vec4(-1.))
+	color.xyz = mix(color.xyz, color.xyz * dif, outputMat.ambient);
+
+	/*if (color == vec4(-1.))
 	{
-		color = materials[0].diffuse;
+		color = materials_data[0].diffuse;
 		//color = vec4(0.1, 0.1, 0.1 ,1);
 		//color = vec4(camdep, camdep, camdep, 1);
 	}
 	else
 	{
 		color.xyz *= dif;
-	}
+	}*/
     outColor = color;
 }

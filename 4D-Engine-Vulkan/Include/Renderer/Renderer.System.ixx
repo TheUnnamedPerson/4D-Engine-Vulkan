@@ -43,7 +43,7 @@ namespace Engine4D {
 		double lastFrameTime;
 
 		rSystem() = delete;
-		rSystem(rDevice& device, std::unique_ptr<rModel>& model, rRendering& renderer, VkRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayout);
+		rSystem(rDevice& device, std::unique_ptr<rModel>& model, rRendering& renderer, VkRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSetLayout materialSetLayout);
 		~rSystem();
 
 		rSystem(const rSystem&) = delete;
@@ -52,7 +52,7 @@ namespace Engine4D {
 		void renderObjects(FrameInfo& frameInfo);
 
 		private:
-		void createPipelineLayout(VkDescriptorSetLayout descriptorSetLayout);
+		void createPipelineLayout(VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSetLayout materialSetLayout);
 		void createPipeline(VkRenderPass renderPass);
 
 		rDevice& device;

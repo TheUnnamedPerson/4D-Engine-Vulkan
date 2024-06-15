@@ -176,6 +176,8 @@ namespace Engine4D {
 		int materialCount = 0;
 		bool updatedMaterials = false;
 
+		bool pushedH = false;
+
 		void Initialize();
 
 		void UpdateInstructions();

@@ -64,6 +64,7 @@ namespace Engine4D
         VkCommandBuffer commandBuffer;
         CameraInfo cameraInfo;
         VkDescriptorSet globalDescriptorSet;
+		VkDescriptorSet materialDescriptorSet;
         int instructionsCount;
 		int materialCount;
     };

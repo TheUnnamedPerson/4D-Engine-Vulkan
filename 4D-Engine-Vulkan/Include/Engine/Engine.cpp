@@ -3,6 +3,7 @@ module;
 #include <string>
 #include <vector>
 #include <type_traits>
+#include <GLFW/glfw3.h>
 
 #include <iostream>
 
@@ -188,6 +189,7 @@ namespace Engine4D
 
 		AddMaterial();
 		materials[0]->diffuse = Vector4(0.1, 0.1, 0.1, 1);
+		materials[0]->ambient = 0;
 		std::cout << "Engine mat[0] index: " << materials[0]->index << std::endl;
 		UpdateMaterials();
 		
@@ -237,6 +239,37 @@ namespace Engine4D
 
 	void Engine::Update()
 	{
+		int stateH = glfwGetKey(renderer->window.getWindow(), GLFW_KEY_H);
+		if (stateH == GLFW_PRESS && !pushedH)
+		{
+			pushedH = true;
+			Engine4D::GameObject* cube = root->AddChild();
+
+			cube->name = "Tesseract";
+
+			std::cout << cube->transform.toString() << std::endl;
+
+				Engine4D::MeshRenderer* CubeRend = cube->AddComponent<Engine4D::MeshRenderer>();
+			CubeRend->AddShape(new Engine4D::Tesseract());
+			CubeRend->material = materials[2];
+
+			std::cout << "Cube Mat Index: " << CubeRend->material->index << std::endl;
+
+			UpdateMaterials();
+
+			//rend->material->color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+			//rend->material->index = 2;
+
+			CubeRend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+
+			Engine4D::RigidBody* rb = cube->AddComponent<Engine4D::RigidBody>();
+			rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
+			rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);
+		}
+		else if (stateH == GLFW_RELEASE)
+		{
+			pushedH = false;
+		}
 		root->Update();
 	}
 

@@ -35,18 +35,18 @@ namespace Engine4D {
 
     rManager::rManager() {
 		globalDescriptorPool = rDescriptorPool::Builder(device)
-			.setMaxSets(rSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.setMaxSets(rSwapChain::MAX_FRAMES_IN_FLIGHT + 1)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, rSwapChain::MAX_FRAMES_IN_FLIGHT)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, rSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
 			.build();
         loadModels();
     }
 
     rManager::rManager(void (*_main_Update)(), void (*_main_Late_Update)(), TimeClass* time) {
         globalDescriptorPool = rDescriptorPool::Builder(device)
-            .setMaxSets(rSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .setMaxSets(rSwapChain::MAX_FRAMES_IN_FLIGHT + 1)
             .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, rSwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, rSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1)
             .build();
 		main_Update = _main_Update;
 		main_Late_Update = _main_Late_Update;
@@ -136,7 +136,7 @@ namespace Engine4D {
             storageBuffers[i]->map();
 		}
 
-        std::vector<std::unique_ptr<rBuffer>> materialBuffers(rSwapChain::MAX_FRAMES_IN_FLIGHT);
+        /*std::vector<std::unique_ptr<rBuffer>> materialBuffers(rSwapChain::MAX_FRAMES_IN_FLIGHT);
         for (int i = 0; i < rSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
             materialBuffers[i] = std::make_unique<rBuffer>(
                 device,
@@ -147,25 +147,40 @@ namespace Engine4D {
                 device.properties.limits.minUniformBufferOffsetAlignment
             );
             materialBuffers[i]->map();
-        }
+        }*/
+
+        std::unique_ptr<rBuffer> materialBuffer = std::make_unique<rBuffer>(
+            device,
+            sizeof(MaterialData),
+            MAX_MATERIAL_COUNT,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+            device.properties.limits.minUniformBufferOffsetAlignment
+        );
+        materialBuffer->map();
 
 		auto globalSetLayout = rDescriptorSetLayout::Builder(device)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-			.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
 
-		std::vector<VkDescriptorSet> globalDescriptorSets(rSwapChain::MAX_FRAMES_IN_FLIGHT);
-		for (int i = 0; i < globalDescriptorSets.size(); i++) {
+        auto materialSetLayout = rDescriptorSetLayout::Builder(device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+            .build();
+
+		std::vector<VkDescriptorSet> globalDescriptorSets(rSwapChain::MAX_FRAMES_IN_FLIGHT + 1);
+		for (int i = 0; i < rSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
 			auto storageBufferInfo = storageBuffers[i]->descriptorInfo();
-			auto materialBufferInfo = materialBuffers[i]->descriptorInfo();
 			rDescriptorWriter(*globalSetLayout, *globalDescriptorPool)
                 .writeBuffer(0, &storageBufferInfo)
-				.writeBuffer(1, &materialBufferInfo)
 				.build(globalDescriptorSets[i]);
-
 		}
 
-		rSystem system(device, model, renderer, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout());
+		auto materialBufferInfo = materialBuffer->descriptorInfo();
+		rDescriptorWriter(*materialSetLayout, *globalDescriptorPool)
+			.writeBuffer(0, &materialBufferInfo)
+			.build(globalDescriptorSets[rSwapChain::MAX_FRAMES_IN_FLIGHT]);
+
+		rSystem system(device, model, renderer, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout(), materialSetLayout->getDescriptorSetLayout());
 
 		float timePassed = 0.0f;
 
@@ -209,6 +224,7 @@ namespace Engine4D {
                         commandbuffer,
                         CameraInfo{rotation, cameraPosition},
                         globalDescriptorSets[frameIndex],
+                        globalDescriptorSets[rSwapChain::MAX_FRAMES_IN_FLIGHT],
                         *instructionCount,
 						*materialCount
                     };
@@ -220,11 +236,17 @@ namespace Engine4D {
                     //storageBuffers[frameIndex]->writeToBuffer(&scene);
 					storageBuffers[frameIndex]->flush();
 
-					if (*updatedMaterials) {
-						*updatedMaterials = false;
-                        materialBuffers[frameIndex]->writeToBuffer(materials->data());
-                        materialBuffers[frameIndex]->flush();
-					}
+					//if (*updatedMaterials) {
+						//*updatedMaterials = false;
+                        //materialBuffers[frameIndex]->writeToBuffer(materials->data());
+                        //materialBuffers[frameIndex]->flush();
+					//}
+
+                    if (*updatedMaterials) {
+                        *updatedMaterials = false;
+                        materialBuffer->writeToBuffer(materials->data());
+                        materialBuffer->flush();
+                    }
 
                     renderer.beginSwapChainRenderPass(commandbuffer);
 					system.renderObjects(frameInfo);

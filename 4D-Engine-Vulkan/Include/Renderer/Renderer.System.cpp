@@ -24,21 +24,21 @@ namespace Engine4D {
         alignas(4) int instructionsCount;
     };
 
-    rSystem::rSystem(rDevice& device, std::unique_ptr<rModel>& model, rRendering& renderer, VkRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayout) : device{ device }, model{ model }, renderer{ renderer } {
-        createPipelineLayout(descriptorSetLayout);
+    rSystem::rSystem(rDevice& device, std::unique_ptr<rModel>& model, rRendering& renderer, VkRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSetLayout materialSetLayout) : device{ device }, model{ model }, renderer{ renderer } {
+        createPipelineLayout(descriptorSetLayout, materialSetLayout);
         createPipeline(renderPass);
     }
 
     rSystem::~rSystem() { vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr); }
 
-    void rSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayout) {
+    void rSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSetLayout materialSetLayout) {
 
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(PushConstantObject);
 
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
+		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout, materialSetLayout };
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -70,13 +70,15 @@ namespace Engine4D {
 
         pipeline->bind(frameInfo.commandBuffer);
 
+		VkDescriptorSet descriptorSets[] = { frameInfo.globalDescriptorSet, frameInfo.materialDescriptorSet };
+
 		vkCmdBindDescriptorSets(
 			frameInfo.commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipelineLayout,
 			0,
-			1,
-			&frameInfo.globalDescriptorSet,
+			2,
+            descriptorSets,
 			0,
 			nullptr);
 
