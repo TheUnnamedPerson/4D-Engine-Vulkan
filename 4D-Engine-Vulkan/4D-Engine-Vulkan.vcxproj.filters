@@ -18,32 +18,109 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine_Window.cpp">
+    <ClCompile Include="Include\Renderer\Renderer.Manager.ixx">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Window.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EngineApp.cpp">
+    <ClCompile Include="Include\Renderer\Renderer.SwapChain.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine_Pipeline.cpp">
+    <ClCompile Include="Include\Renderer\Renderer.Model.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Pipeline.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.SwapChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Device.ixx" />
+    <ClCompile Include="Include\Renderer\Renderer.Buffer.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Engine.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Primitives.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Primitives.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Components.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Components.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Time.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Structs.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Rendering.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Rendering.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.System.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.System.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Descriptors.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Renderer.Descriptors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Material.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine_Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine_Pipeline.h">
+    <ClInclude Include="Include\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\simple_shader.vert" />
-    <None Include="shaders\simple_shader.frag" />
-    <None Include="compile_shaders.bat">
+    <None Include="Compile_Shaders.bat">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="shaders\simple_shader.frag" />
+    <None Include="shaders\simple_shader.vert" />
+    <None Include="shaders\simple_shader.vert.spv" />
+    <None Include="shaders\simple_shader.frag.spv" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\texture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
