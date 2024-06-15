@@ -3,6 +3,7 @@
 precision highp float; 
 
 const int MAX_INSTRUCTIONS = 200;
+const int MAX_MATERIALS = 128;
 const int MAX_INSTRUCTION_DATA = 8;
 
 /*
@@ -16,6 +17,7 @@ layout(push_constant) uniform u_values
 	float u_rot;
 	vec4 u_cam;
 	int u_numInstructions;
+	int u_numMaterials;
 } push;
 
 //See 
@@ -35,15 +37,19 @@ struct Instruction
 	vec4 valueB;
 };
 
+struct Material {
+	vec4 diffuse;
+};
+
 layout(set = 0, binding = 0) buffer InstructionsBuffer
 {
 	InstructionData instructions_data[MAX_INSTRUCTIONS];
 };
 
-struct Material {
-	vec4 diffuse;
+layout(set = 0, binding = 1) uniform MaterialsBuffer
+{
+	Material materials_data[MAX_MATERIALS];
 };
-
  
 // Constants
 #define PI 3.1415925359
@@ -348,7 +354,13 @@ float ParseInstruction (Instruction inst, vec4 p)
 
 Material materials[9];
 
-float ParseInstructions (vec4 pp, out int materialIndex, inout int index)
+struct shapeData {
+	float dis;
+	int matIndex;
+};
+
+
+shapeData ParseInstructions (vec4 pp, int materialIndex, inout int index)
 {
 	vec4 p = pp;
 	int n = push.u_numInstructions;
@@ -451,22 +463,17 @@ float ParseInstructions (vec4 pp, out int materialIndex, inout int index)
 			if (pseudoRecursionDataIndex < 0) break;
 		}
 	}
-	return _shape;
+	return shapeData(_shape, materialIndex);
 }
 
-struct getDistOutput {
-	float dis;
-	int matIndex;
-};
-
-getDistOutput GetDist(vec4 p)
+shapeData GetDist(vec4 p)
 {
-    getDistOutput shapes[2048];
+    shapeData shapes[2048];
 	//getDistOutput shapes[2];
 
 	int totalShapesForInstructions = 1;
 
-	shapes[0] = getDistOutput(hyperSphere(p / 100.0) * -100.0, -1);
+	shapes[0] = shapeData(hyperSphere(p / 100.0) * -100.0, -1);
 
 	int instMat = 0;
 	int instructionIndex = 0;
@@ -477,21 +484,12 @@ getDistOutput GetDist(vec4 p)
 	for (instructionIndex = 0; totalShapesForInstructions <= 2; instructionIndex++)
 	{
 		totalShapesForInstructions++;
-		/*getDistOutput nextShape = getDistOutput(ParseInstructions(p, instMat, instructionIndex), instMat);
-		if (shapeIndex == 1) shapes[shapeIndex] = nextShape;
-		else
-		{
-			if (nextShape.dis < curShape.dis)
-			{
-				curShape = nextShape;
-			}
-		}*/
-		shapes[shapeIndex] = getDistOutput(ParseInstructions(p, instMat, instructionIndex), instMat);
-		//ParseInstructions(p, instMat, instructionIndex);
+		shapes[shapeIndex] = ParseInstructions(p, instMat, instructionIndex);
+		instructionIndex--;
 		shapeIndex++;
 	}
 
-	instMat = 2;
+	//instMat = 2;
 	//shapesCount = 4;
 	//totalShapesForInstructions = 3;
 	/*int n = 0;
@@ -533,7 +531,7 @@ const int MAX_TRANSPARENT_SHAPES = 16;
 
 float RayMarch(vec4 ro, vec4 rd, out Material _mat) 
 {
-    getDistOutput dO = getDistOutput(0, 0); //Distance Origin
+    shapeData dO = shapeData(0, 0); //Distance Origin
 	Material[MAX_TRANSPARENT_SHAPES] transparentMats;
 	float[MAX_TRANSPARENT_SHAPES] transparentShapeDistances;
 	int nT = 0;
@@ -542,7 +540,7 @@ float RayMarch(vec4 ro, vec4 rd, out Material _mat)
     {
 		if (nT >= MAX_TRANSPARENT_SHAPES) nT = MAX_TRANSPARENT_SHAPES - 1;
         vec4 p = ro + rd * dO.dis;
-        getDistOutput ds = GetDist(p); // ds is Distance Scene
+        shapeData ds = GetDist(p); // ds is Distance Scene
         dO.dis += ds.dis;
         if(dO.dis > MAX_DIST || ds.dis < SURFACE_DIST) {
 			if (materials[ds.matIndex].diffuse.w < 1. && materials[ds.matIndex].diffuse.w >= 0) {
@@ -720,8 +718,8 @@ void main()
 	rd = normalize(rd);
 
 	materials[0] = Material(vec4(0.1, 0.1, 0.1, 1));
-	materials[1] = Material(vec4(0.1, 0.1, 0.5, 1));
-	materials[2] = Material(vec4(0, 0.25, 0.5, 1));
+	materials[1] = Material(vec4(0.0, 0.25, 0.25, 1));
+	materials[2] = Material(vec4(0, 0.0, 1, 1));
 	materials[3] = Material(vec4(1, 0, 0, 1));
 	materials[4] = Material(vec4(0, 1, 0, 1));
 	materials[5] = Material(vec4(0, 0, 1, 1));

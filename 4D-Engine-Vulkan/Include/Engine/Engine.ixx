@@ -171,19 +171,22 @@ namespace Engine4D {
 		int instructionCount = 0;
 		std::vector<InstructionData> instructions;
 
-		//std::vector<Material*> materials;
-		//int materialCount = 0;
+		std::vector<Material*> materials;
+		std::vector<MaterialData> materialsData;
+		int materialCount = 0;
+		bool updatedMaterials = false;
 
 		void Initialize();
 
 		void UpdateInstructions();
+		void UpdateMaterials();
 
 		void Update();
 		void FixedUpdate();
 		void LateUpdate();
 
 		int AddGameObject(GameObject* gameObject);
-		//Material* AddMaterial();
+		Material* AddMaterial();
 
 		GameObject* currentGameObject;
 		

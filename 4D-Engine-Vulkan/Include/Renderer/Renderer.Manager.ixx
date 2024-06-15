@@ -25,6 +25,8 @@ import Engine4D.Renderer.Descriptors;
 
 import Engine4D.Primitives;
 
+import Engine4D.Material;
+
 
 import Engine4D.Structs;
 
@@ -45,6 +47,10 @@ namespace Engine4D {
 
 		std::vector<InstructionData>* instructions;
 		int* instructionCount;
+
+		std::vector<MaterialData>* materials;
+		int* materialCount;
+		bool* updatedMaterials;
 
 		uint32_t frameIndex = 0;
 

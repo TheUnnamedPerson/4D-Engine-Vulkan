@@ -1,5 +1,7 @@
 module;
 
+#include <glm/glm.hpp>
+
 export module Engine4D.Material;
 
 import Engine4D.Primitives;
@@ -12,7 +14,7 @@ namespace Engine4D
 	export class Material
 	{
 		public:
-		Vector4 color;
+		Vector4 diffuse;
 
 		int index;
 
@@ -25,19 +27,31 @@ namespace Engine4D
 
 	};
 
+	export struct MaterialData
+	{
+		alignas(16) glm::vec4 diffuse;
+	};
+
+	export MaterialData MaterialToData(Material* material)
+	{
+		MaterialData data;
+		data.diffuse = (glm::vec4)material->diffuse;
+		return data;
+	}
+
 	Material::Material()
 	{
-		this->color = Vector4(0, 0, 0, 1);
+		this->diffuse = Vector4(0, 0, 0, 1);
 	}
 
 	Material::Material(int _index)
 	{
-		this->color = Vector4(0, 0, 0, 1);
+		this->diffuse = Vector4(0, 0, 0, 1);
 		this->index = _index;
 	}
 
 	Material::Material(Vector4 color)
 	{
-		this->color = color;
+		this->diffuse = color;
 	}
 }

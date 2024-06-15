@@ -91,10 +91,15 @@ int main() {
 
 		floor->name = "Floor";
 
-		std::cout << floor->transform.toString() << std::endl; \
+		std::cout << floor->transform.toString() << std::endl;
 
 		Engine4D::MeshRenderer* FloorRend = floor->AddComponent<Engine4D::MeshRenderer>();
 		FloorRend->AddShape(new Engine4D::HyperPlane());
+		FloorRend->material = engine.AddMaterial();
+		FloorRend->material->diffuse = Engine4D::Vector4(0.0f, 0.25f, 0.25f, 1.0f);
+
+		std::cout << "Floor Mat Index: " << FloorRend->material->index << std::endl;
+		
 
 		FloorRend->transform->position = Engine4D::Vector4(0.0f);
 
@@ -106,6 +111,13 @@ int main() {
 
 		Engine4D::MeshRenderer* CubeRend = cube->AddComponent<Engine4D::MeshRenderer>();
 		CubeRend->AddShape(new Engine4D::Tesseract());
+		CubeRend->material = engine.AddMaterial();
+		CubeRend->material->diffuse = Engine4D::Vector4(0.0f, 0.0f, 1.0f, 1.0f);
+
+		std::cout << "Cube Mat Index: " << CubeRend->material->index << std::endl;
+
+		engine.UpdateMaterials();
+
 		//rend->material->color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 		//rend->material->index = 2;
 

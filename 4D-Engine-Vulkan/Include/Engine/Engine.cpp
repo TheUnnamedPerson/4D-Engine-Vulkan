@@ -182,7 +182,15 @@ namespace Engine4D
 	{
 		renderer->instructions = &instructions;
 		renderer->instructionCount = &instructionCount;
-		//renderer->materials = &materials;
+		renderer->materials = &materialsData;
+		renderer->materialCount = &materialCount;
+		renderer->updatedMaterials = &updatedMaterials;
+
+		AddMaterial();
+		materials[0]->diffuse = Vector4(0.1, 0.1, 0.1, 1);
+		std::cout << "Engine mat[0] index: " << materials[0]->index << std::endl;
+		UpdateMaterials();
+		
 	}
 
 	void Engine::UpdateInstructions()
@@ -213,6 +221,18 @@ namespace Engine4D
 			iterateNextGameObject();
 		} 
 		instructions.resize(MAX_INSTRUCTIONS);
+	}
+
+	void Engine::UpdateMaterials()
+	{
+		materialsData.clear();
+
+		for (int i = 0; i < materialCount; i++)
+		{
+			materialsData.push_back(MaterialToData(materials[i]));
+		}
+		materialsData.resize(MAX_MATERIAL_COUNT);
+		updatedMaterials = true;
 	}
 
 	void Engine::Update()
@@ -341,18 +361,16 @@ namespace Engine4D
 		this->layer = layer;
 	}
 
-	/*Material* Engine::AddMaterial()
+	Material* Engine::AddMaterial()
 	{
 		if (materialCount >= MAX_MATERIAL_COUNT)
 		{
 			return nullptr;
 		}
 
-		Material* result = new Material(materialCount);
-
-		materials.push_back(result);
+		materials.push_back(new Material(materialCount));
 		materialCount++;
-		return result;
-	}*/
+		return materials[materialCount - 1];
+	}
 
 }

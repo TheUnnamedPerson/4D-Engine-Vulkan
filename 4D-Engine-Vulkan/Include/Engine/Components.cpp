@@ -85,7 +85,8 @@ namespace Engine4D
 			Instruction initInstruction = Instruction();
 			initInstruction.type = 21;
 			initInstruction.valueA = glm::mat4(0);
-			initInstruction.valueB = glm::vec4(2, 0, 0, 0);
+			initInstruction.valueB = glm::vec4(material->index, 0, 0, 0);
+			std::cout << "\tMaterial Index: " << material->index << std::endl;
 			//initInstruction.valueB = (glm::vec4)material.color;
 			instructions.push_back(InstructionToData(initInstruction));
 
@@ -111,8 +112,6 @@ namespace Engine4D
 				instructions.push_back(InstructionToData(shapeInstruction));
 			}
 		}
-		std::cout << "\trb.position: " << this->transform->position << std::endl;
-		std::cout << "\trb.rotation: " << this->transform->rotation << " ; " << this->transform->rotationW << std::endl;
 		return instructions;
 	}
 
