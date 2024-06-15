@@ -29,6 +29,32 @@ void engine_Late_Update()
     engine.LateUpdate();
 }
 
+class TestBase {
+    public:
+	    std::string name;
+		virtual void empty() {}
+};
+
+class TestDerived : public TestBase {
+	public:
+	    std::vector<int> intList;
+	    TestDerived() {
+		    name = "TestDerived";
+			//intList = std::vector<int>();
+	    }
+		void empty() override {}
+};
+
+class TestDerived2 : public TestBase {
+	public:
+		int id;
+		TestDerived2() {
+			name = "TestDerived2";
+			id = 2;
+		}
+		void empty() override {}
+};
+
 int main() {
 	VLDEnable();
 
@@ -37,24 +63,48 @@ int main() {
 	engine.Time = &Time;
 	engine.renderer = &app;
 
+	TestDerived2 test = TestDerived2();
+
+	std::cout << "Test 1: " << test.name << std::endl;
+
+	TestBase* test2 = &test;
+
+	std::cout << "Test 2: " << test2->name << std::endl;
+
+	if (TestDerived2* test3 = dynamic_cast<TestDerived2*>(test2))
+	{
+		std::cout << "Test 3: " << test3->id << std::endl;
+	}
+
+	if (TestDerived* test4 = dynamic_cast<TestDerived*>(test2))
+	{
+		std::cout << "Test 4: " << test4->intList.size() << std::endl;
+	}
+
+	std::cout << "Done" << std::endl;
+
     try {
 
         engine.Initialize();
 
-        engine.root->AddChild();
+        Engine4D::GameObject* cube = engine.root->AddChild();
 
-        std::cout << engine.root->GetChild(0)->transform.toString() << std::endl;
+		cube->name = "Tesseract";
 
-		Engine4D::MeshRenderer* rend = engine.root->GetChild(0)->AddComponent<Engine4D::MeshRenderer>();
-		rend->AddShape(new Engine4D::Tesseract());
+        std::cout << cube->transform.toString() << std::endl;\
+
+		Engine4D::MeshRenderer* CubeRend = cube->AddComponent<Engine4D::MeshRenderer>();
+		CubeRend->AddShape(new Engine4D::Tesseract());
 		//rend->material->color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 		//rend->material->index = 2;
 
-		rend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
+		CubeRend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
 
-        Engine4D::RigidBody* rb = engine.root->GetChild(0)->AddComponent<Engine4D::RigidBody>();
+        Engine4D::RigidBody* rb = cube->AddComponent<Engine4D::RigidBody>();
         rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
         rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);
+
+        std::cout << "Getting Instructions." << std::endl;
 
         engine.UpdateInstructions();
 

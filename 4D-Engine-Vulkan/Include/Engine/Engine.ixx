@@ -2,6 +2,7 @@ module;
 
 #include <string>
 #include <vector>
+#include <queue>
 #include <type_traits>
 #include <stdexcept>
 #include <string>
@@ -32,6 +33,7 @@ namespace Engine4D {
 		Vector4 scale;
 
 		GameObject* gameObject;
+		GameObject* parent;
 
 		Matrix rotationMatrix;
 		glm::mat4 transformationMatrix;
@@ -84,6 +86,8 @@ namespace Engine4D {
 			GameObject* AddChild();
 			GameObject* AddChild(GameObject* child);
 
+			void RemoveChild(int index);
+
 			GameObject* GetChild(int index);
 			//GameObject* GetChild(std::string name);
 
@@ -95,6 +99,9 @@ namespace Engine4D {
 			std::vector<T> GetComponents();
 
 		protected:
+
+			int id;
+
 			std::vector<Component*> components;
 			std::vector<GameObject*> children;
 
@@ -155,8 +162,10 @@ namespace Engine4D {
 		rManager* renderer;
 		TimeClass* Time;
 
-		std::vector<GameObject**> gameObjects;
+		std::vector<GameObject*> gameObjects;
 		GameObject* root;
+
+		std::queue <int> freeIDs;
 
 		bool sceneChanged = false;
 		int instructionCount = 0;
@@ -173,8 +182,35 @@ namespace Engine4D {
 		void FixedUpdate();
 		void LateUpdate();
 
-		void AddGameObject(GameObject** gameObject);
+		int AddGameObject(GameObject* gameObject);
 		//Material* AddMaterial();
+
+		GameObject* currentGameObject;
+		
+		void iterateNextGameObject();
+		void iteratePreviousGameObject();
+
+		//void LastGameObject();
+		void FirstGameObject();
+
+		void iterateGameObjects(int n);
+
+		bool isLastGameObject();
+
+		private:
+			int currentGameObjectIndex = 0;
+	};
+
+	export class ObjectMetaData : public Component
+	{
+		public:
+		//std::string name;
+		std::string tag;
+		std::string layer;
+
+		ObjectMetaData() = delete;
+		ObjectMetaData(GameObject* gameObject);
+		ObjectMetaData(GameObject* gameObject, /*std::string name,*/ std::string tag, std::string layer);
 	};
 
 

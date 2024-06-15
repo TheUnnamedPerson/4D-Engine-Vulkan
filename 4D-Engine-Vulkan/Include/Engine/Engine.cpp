@@ -61,6 +61,14 @@ namespace Engine4D
 		this->engine = _engine;
 		this->name = "GameObject";
 		this->transform = Transform(this);
+		this->components = std::vector<Component*>();
+		this->AddComponent<ObjectMetaData>();
+		if (_engine->freeIDs.empty()) id = _engine->gameObjects.size();
+		else
+		{
+			id = _engine->freeIDs.front();
+			_engine->freeIDs.pop();
+		}
 	}
 
 	GameObject::~GameObject()
@@ -75,13 +83,15 @@ namespace Engine4D
 			if (children[i] != nullptr) delete children[i];
 		}
 		children.clear();
+		engine->freeIDs.push(id);
+		engine->gameObjects[id] = nullptr;
 	}
 
 	GameObject* GameObject::AddChild()
 	{
 		GameObject* child = new GameObject(engine);
 		children.push_back(child);
-		engine->AddGameObject(&children[children.size() - 1]);
+		engine->AddGameObject(child);
 		return child;
 	}
 
@@ -89,6 +99,12 @@ namespace Engine4D
 	{
 		children.push_back(child);
 		return child;
+	}
+
+	void GameObject::RemoveChild(int index)
+	{
+		delete children[index];
+		children.erase(children.begin() + index);
 	}
 
 	GameObject* GameObject::GetChild(int index)
@@ -148,9 +164,11 @@ namespace Engine4D
 
 	Engine::Engine()
 	{
-		this->gameObjects = std::vector<GameObject**>();
-		this->root = new GameObject(this);
-		gameObjects.push_back(&this->root);
+		this->gameObjects = std::vector<GameObject*>();
+		this->root = new GameObject(this); this->root->name = "Root";
+		this->gameObjects.push_back(this->root);
+		this->freeIDs = std::queue<int>();
+		this->FirstGameObject();
 	}
 
 	Engine::~Engine()
@@ -171,19 +189,29 @@ namespace Engine4D
 	{
 		instructionCount = 0;
 		instructions.clear();
-		for (GameObject** gameObject : gameObjects)
+
+		FirstGameObject();
+		while (true)
 		{
-			for (Component* component : (*gameObject)->components)
+			int n = currentGameObject->components.size();
+			for (int i = 0; i < n; i++)
 			{
-				if (dynamic_cast<MeshRenderer*>(component) != nullptr)
+				Component* component = currentGameObject->components[i];
+
+				if (MeshRenderer* meshRenderer = dynamic_cast<MeshRenderer*>(component))
 				{
-					MeshRenderer* meshRenderer = (MeshRenderer*)component;
 					std::vector<InstructionData> _instructions = meshRenderer->getInstructions();
 					instructions.insert(instructions.end(), _instructions.begin(), _instructions.end());
 					instructionCount += _instructions.size();
 				}
+
 			}
-		}
+			if (isLastGameObject())
+			{
+				break;
+			}
+			iterateNextGameObject();
+		} 
 		instructions.resize(MAX_INSTRUCTIONS);
 	}
 
@@ -209,9 +237,108 @@ namespace Engine4D
 		}
 	}
 
-	void Engine::AddGameObject(GameObject** gameObject)
+	int Engine::AddGameObject(GameObject* gameObject)
 	{
-		gameObjects.push_back(gameObject);
+		if (freeIDs.size() > 0)
+		{
+			int id = freeIDs.front();
+			freeIDs.pop();
+			gameObjects[id] = gameObject;
+			return id;
+		}
+		else
+		{
+			gameObjects.push_back(gameObject);
+			return gameObjects.size() - 1;
+		}
+	}
+
+	void Engine::iterateNextGameObject()
+	{
+		currentGameObjectIndex++;
+		if (currentGameObjectIndex >= gameObjects.size())
+		{
+			throw std::out_of_range("currentGameObjectIndex is Out of Bounds. (>= gameObjects.size())");
+		}
+		while (gameObjects[currentGameObjectIndex] == nullptr)
+		{
+			currentGameObjectIndex++;
+			if (currentGameObjectIndex >= gameObjects.size())
+			{
+				throw std::out_of_range("currentGameObjectIndex is Out of Bounds. (>= gameObjects.size())");
+			}
+		}
+		currentGameObject = gameObjects[currentGameObjectIndex];
+	}
+
+	void Engine::iteratePreviousGameObject()
+	{
+		currentGameObjectIndex--;
+		if (currentGameObjectIndex < 0)
+		{
+			throw std::out_of_range("currentGameObjectIndex is Out of Bounds. (< 0)");
+		}
+		while (gameObjects[currentGameObjectIndex] == nullptr)
+		{
+			currentGameObjectIndex--;
+			if (currentGameObjectIndex < 0)
+			{
+				throw std::out_of_range("currentGameObjectIndex is Out of Bounds. (< 0)");
+			}
+		}
+		currentGameObject = gameObjects[currentGameObjectIndex];
+	}
+
+	void Engine::FirstGameObject()
+	{
+		currentGameObjectIndex = 0;
+		currentGameObject = gameObjects[currentGameObjectIndex];
+	}
+
+	void Engine::iterateGameObjects(int n)
+	{
+		if (n > 0)
+		{
+			for (int i = 0; i < n; i++)
+			{
+				iterateNextGameObject();
+			}
+		}
+		else
+		{
+			for (int i = 0; i < -n; i++)
+			{
+				iteratePreviousGameObject();
+			}
+		}
+	}
+
+	bool Engine::isLastGameObject()
+	{
+		int i = currentGameObjectIndex;
+		try {
+			iterateNextGameObject();
+			iteratePreviousGameObject();
+			return false;
+		}
+		catch (std::out_of_range &e)
+		{
+			currentGameObjectIndex = i;
+			currentGameObject = gameObjects[currentGameObjectIndex];
+			return true;
+		}
+	}
+
+	ObjectMetaData::ObjectMetaData(GameObject* gameObject) : Component(gameObject)
+	{
+
+	}
+
+	ObjectMetaData::ObjectMetaData(GameObject* gameObject, /*std::string name,*/ std::string tag, std::string layer) : Component(gameObject)
+	{
+		//this->name = name;
+		this->tag = tag;
+		this->layer = layer;
 	}
 
 	/*Material* Engine::AddMaterial()
