@@ -346,7 +346,7 @@ float ParseInstruction (Instruction inst, vec4 p)
 	return 0;
 }
 
-Material materials[4];
+Material materials[9];
 
 float ParseInstructions (vec4 pp, out int materialIndex, inout int index)
 {
@@ -372,9 +372,9 @@ float ParseInstructions (vec4 pp, out int materialIndex, inout int index)
 	int _j = 0;
 	int _jj = 0;
 
-	
+	int sI = index;
 
-	for (int i = 0; i < n; i++)
+	for (int i = sI; i < n; i++)
 	{
 		index++;
 		j++;
@@ -462,8 +462,9 @@ struct getDistOutput {
 getDistOutput GetDist(vec4 p)
 {
     getDistOutput shapes[2048];
+	//getDistOutput shapes[2];
 
-	int shapesCount = 1;
+	int totalShapesForInstructions = 1;
 
 	shapes[0] = getDistOutput(hyperSphere(p / 100.0) * -100.0, -1);
 
@@ -471,14 +472,43 @@ getDistOutput GetDist(vec4 p)
 	int instructionIndex = 0;
 	int shapeIndex = 1;
 
-	for (instructionIndex = 0; instructionIndex < push.u_numInstructions; instructionIndex++)
+	//getDistOutput curShape = getDistOutput(0, 0);
+	//for (instructionIndex = 0; instructionIndex < push.u_numInstructions; instructionIndex++)
+	for (instructionIndex = 0; totalShapesForInstructions <= 2; instructionIndex++)
 	{
+		totalShapesForInstructions++;
+		/*getDistOutput nextShape = getDistOutput(ParseInstructions(p, instMat, instructionIndex), instMat);
+		if (shapeIndex == 1) shapes[shapeIndex] = nextShape;
+		else
+		{
+			if (nextShape.dis < curShape.dis)
+			{
+				curShape = nextShape;
+			}
+		}*/
 		shapes[shapeIndex] = getDistOutput(ParseInstructions(p, instMat, instructionIndex), instMat);
+		//ParseInstructions(p, instMat, instructionIndex);
 		shapeIndex++;
-		shapesCount++;
 	}
 
 	instMat = 2;
+	//shapesCount = 4;
+	//totalShapesForInstructions = 3;
+	/*int n = 0;
+	if (totalShapesForInstructions > 1000) n = 3;
+	else n = 4;
+
+	float dac = hyperSphere((p / vec4(1.5)) - vec4(-2, 1, -2, 0)) * 1.5;
+	//dac = hyperPlane(p, vec4(0, 1, 0, 0), 0);
+	for (int i = 1; i < totalShapesForInstructions; i++)
+	{
+		float _nextShape = hyperSphere((p / vec4(1.5)) - vec4(-2 + 1.5 * i, 1 + 0.5 * (i % 10), -2, 0)) * 1.5;
+		dac = unionSdf(dac, _nextShape);
+	}
+
+	shapes[1] = getDistOutput(dac, 1);*/
+
+	//shapes[1] = curShape;
 
 	//materials[0] = Material(vec4(vec3(shapesCount / 5.0, shapesCount / 10.0, shapesCount / 20.0), 1));
 
@@ -486,12 +516,15 @@ getDistOutput GetDist(vec4 p)
 
     int index = 0;
 
-    for(int i = 1; i < shapesCount; i++) {
+    for(int i = 1; i < totalShapesForInstructions; i++) {
 		if (i != lastTransparentShape || materials[shapes[i].matIndex].diffuse.w == 1.)
 		index = (shapes[i].dis < shapes[index].dis) ? i : index;
 	}
 
 	if (materials[shapes[index].matIndex].diffuse.w < 1. && materials[shapes[index].matIndex].diffuse.w >= 0) lastTransparentShape = index;
+
+	//if (instructionIndex > 8) instructionIndex = 8;
+	//if (index != 0) shapes[index].matIndex = instructionIndex;
 
     return shapes[index];
 }
@@ -690,6 +723,11 @@ void main()
 	materials[1] = Material(vec4(0.1, 0.1, 0.5, 1));
 	materials[2] = Material(vec4(0, 0.25, 0.5, 1));
 	materials[3] = Material(vec4(1, 0, 0, 1));
+	materials[4] = Material(vec4(0, 1, 0, 1));
+	materials[5] = Material(vec4(0, 0, 1, 1));
+	materials[6] = Material(vec4(1, 1, 0, 1));
+	materials[7] = Material(vec4(0, 1, 1, 1));
+	materials[8] = Material(vec4(1, 0, 1, 1));
 
 	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.5 + 0.25 * (sin(push.u_time / 4) + 1)), XY);
 	//ro = rotate4D(ro, vec4(0, 0, 0, 0), PI * ( -0.45 + 0.5 * 0.5 * (sin(push.u_time / 4.) + 2)), XY);

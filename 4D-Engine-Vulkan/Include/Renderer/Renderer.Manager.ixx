@@ -23,6 +23,8 @@ import Engine4D.Renderer.Buffer;
 import Engine4D.Renderer.System;
 import Engine4D.Renderer.Descriptors;
 
+import Engine4D.Primitives;
+
 
 import Engine4D.Structs;
 

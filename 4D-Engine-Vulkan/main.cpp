@@ -87,6 +87,17 @@ int main() {
 
         engine.Initialize();
 
+		Engine4D::GameObject* floor = engine.root->AddChild();
+
+		floor->name = "Floor";
+
+		std::cout << floor->transform.toString() << std::endl; \
+
+		Engine4D::MeshRenderer* FloorRend = floor->AddComponent<Engine4D::MeshRenderer>();
+		FloorRend->AddShape(new Engine4D::HyperPlane());
+
+		FloorRend->transform->position = Engine4D::Vector4(0.0f);
+
         Engine4D::GameObject* cube = engine.root->AddChild();
 
 		cube->name = "Tesseract";
@@ -104,7 +115,7 @@ int main() {
         rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
         rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);
 
-        std::cout << "Getting Instructions." << std::endl;
+		std::cout << "Getting Instructions." << std::endl;
 
         engine.UpdateInstructions();
 
