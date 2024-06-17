@@ -12,20 +12,6 @@ import Engine4D.Material;
 
 namespace Engine4D
 {
-	export class Mesh
-	{
-		public:
-		std::vector<Shape*> shapes;
-
-		Mesh();
-		Mesh(std::vector<Shape> shapes);
-		Mesh(std::vector<Shape*> shapes);
-
-		~Mesh();
-
-		void AddShape(Shape* shape);
-	};
-
 	export class MeshRenderer : public MonoBehavior
 	{
 		public:
@@ -53,12 +39,17 @@ namespace Engine4D
 		Vector3 rotationalVelocity;
 		Vector3 rotationalVelocityW;
 
+		float mass;
+
 		float countdowntime = 0.0f;
 
 		RigidBody() = delete;
 		RigidBody(GameObject* gameObject);
 
 		void Update() override;
+
+		void OnCollisionEnter(Collision collision) override;
+		void OnCollisionExit(Collision collision) override;
 
 		std::string toString() override;
 	};

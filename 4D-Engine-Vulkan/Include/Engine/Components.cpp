@@ -12,33 +12,11 @@ module Engine4D.Components;
 
 namespace Engine4D
 {
-	Mesh::Mesh()
-	{
-		this->shapes = std::vector<Shape*>();
-	}
-
-	Mesh::Mesh(std::vector<Shape*> shapes)
-	{
-		this->shapes = shapes;
-	}
-
-	Mesh::~Mesh()
-	{
-		for (int i = 0; i < this->shapes.size(); i++)
-		{
-			delete this->shapes[i];
-		}
-	}
-
-	void Mesh::AddShape(Shape* shape)
-	{
-		this->shapes.push_back(shape);
-	}
-
 	MeshRenderer::MeshRenderer(GameObject* gameObject) : MonoBehavior(gameObject)
 	{
 		this->mesh = Mesh();
 		this->name = "MeshRenderer";
+		this->id = 3;
 		//this->material = gameObject->engine->AddMaterial();
 		this->material = nullptr;
 		if (this->material == nullptr)
@@ -86,7 +64,7 @@ namespace Engine4D
 			initInstruction.type = 21;
 			initInstruction.valueA = glm::mat4(0);
 			initInstruction.valueB = glm::vec4(material->index, 0, 0, 0);
-			std::cout << "\tMaterial Index: " << material->index << std::endl;
+			//std::cout << "\tMaterial Index: " << material->index << std::endl;
 			//initInstruction.valueB = (glm::vec4)material.color;
 			instructions.push_back(InstructionToData(initInstruction));
 
@@ -117,8 +95,9 @@ namespace Engine4D
 
 	RigidBody::RigidBody(GameObject* gameObject) : MonoBehavior(gameObject)
 	{
-		this->gravity = Vector4(0, -9.8f, 0, 0);
+		this->id = 4;
 		this->name = "RigidBody";
+		this->gravity = Vector4(0, -9.8f, 0, 0);
 	}
 
 	void RigidBody::Update()
@@ -149,6 +128,18 @@ namespace Engine4D
 		gameObject->engine->sceneChanged = true;
 
 		countdowntime += gameObject->engine->Time->deltaTime;
+	}
+
+	void RigidBody::OnCollisionEnter(Collision collision)
+	{
+		std::cout << "Collision Entered." << std::endl;
+		std::cout << collision.collider2->gameObject->name << std::endl;
+	}
+
+	void RigidBody::OnCollisionExit(Collision collision)
+	{
+		std::cout << "Collision Exited." << std::endl;
+		//std::cout << collision.collider2->gameObject->name << std::endl;
 	}
 
 	std::string RigidBody::toString()

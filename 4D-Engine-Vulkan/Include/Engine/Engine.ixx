@@ -6,6 +6,7 @@ module;
 #include <type_traits>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 
@@ -23,6 +24,7 @@ namespace Engine4D {
 	export class GameObject;
 	export class Component;
 	export class Engine;
+	export class Collision;
 
 	export class Transform
 	{
@@ -93,10 +95,10 @@ namespace Engine4D {
 
 
 			template<typename T>
-			T GetComponent();
+			T* GetComponent();
 
 			template<typename T>
-			std::vector<T> GetComponents();
+			std::vector<T*> GetComponents();
 
 		protected:
 
@@ -118,10 +120,13 @@ namespace Engine4D {
 		GameObject* gameObject;
 		Transform* transform;
 
+		int id = 0;
 		std::string name = "Component";
 
 		Component() = delete;
-		Component(GameObject* gameObject) { this->gameObject = gameObject; this->transform = &(gameObject->transform); }
+		Component(GameObject* gameObject);
+
+		~Component();
 
 		virtual std::string toString();
 
@@ -139,13 +144,57 @@ namespace Engine4D {
 			virtual void FixedUpdate() {}
 			virtual void LateUpdate() {}
 
-			virtual void onInitialization() {}
+			virtual void OnCollisionEnter(Collision collision);
+			//virtual void OnCollisionStay(Collision collision);
+			virtual void OnCollisionExit(Collision collision);
+
+			virtual void OnInitialization() {}
 
 			MonoBehavior() = delete;
 			MonoBehavior(GameObject* gameObject);
 			
 			//std::vector<std::type_identity_t> RequiredComponents;
 		
+	};
+
+	export class Collider : public MonoBehavior
+	{
+		public:
+		Collider() = delete;
+		Collider(GameObject* gameObject);
+		Collider(GameObject* gameObject, Mesh colliderMesh);
+
+		std::unordered_map<Collider*, Collision> collisions;
+
+		Mesh colliderMesh;
+
+		void AddShape(Shape* shape);
+
+		float SDF(Vector4 point);
+
+		Vector4 CollisionMarch(Collider* other, Vector4 reference);
+		void CheckCollision(Collider* other);
+		void TriggerCollisionEnters(Collision collision);
+		void TriggerCollisionExits(Collision collision);
+
+		std::string toString() override;
+	};
+
+	class Collision
+	{
+		public:
+			Collider* collider1;
+			Collider* collider2;
+
+			Vector4 collisionPointA;
+			Vector4 collisionPointB;
+
+			Vector4 collisionNormalA;
+			Vector4 collisionNormalB;
+
+			//Collision() = delete;
+			Collision() = default;
+			Collision(Collider* collider1, Collider* collider2);
 	};
 
 	class Engine
@@ -178,10 +227,17 @@ namespace Engine4D {
 
 		bool pushedH = false;
 
+		std::unordered_map<int, std::vector<Component*>> updateComponents;
+
 		void Initialize();
+
+		void AddUpdateComponent(Component* component);
+		void RemoveUpdateComponent(Component* component);
+		void UpdateAllComponents();
 
 		void UpdateInstructions();
 		void UpdateMaterials();
+		void UpdateCollisions();
 
 		void Update();
 		void FixedUpdate();
@@ -218,6 +274,9 @@ namespace Engine4D {
 		ObjectMetaData(GameObject* gameObject, /*std::string name,*/ std::string tag, std::string layer);
 	};
 
+	void MonoBehavior::OnCollisionEnter(Collision collision) {}
+	//virtual void MonoBehavior::OnCollisionStay(Collision collision) {}
+	void MonoBehavior::OnCollisionExit(Collision collision) {}
 
 	template<typename T>
 	T* GameObject::AddComponent()
@@ -235,29 +294,54 @@ namespace Engine4D {
 	}
 
 	template<typename T>
-	T GameObject::GetComponent()
+	T* GameObject::GetComponent()
 	{
+		if (!std::is_base_of<Component, T>::value)
+		{
+			throw std::invalid_argument("T must be a subclass of or be Type Component");
+			return nullptr;
+		}
 		for (Component component : components)
 		{
 			if (T* t = dynamic_cast<T*>(&component))
 			{
-				return *t;
+				return t;
 			}
 		}
 	}
 
-	template<typename T>
-	std::vector<T> GameObject::GetComponents()
+	template<>
+	Component* GameObject::GetComponent()
 	{
-		std::vector<T> result;
-		for (Component component : components)
+		return components[0];
+	}
+
+	template<typename T>
+	std::vector<T*> GameObject::GetComponents()
+	{
+		if (!std::is_base_of<Component, T>::value)
 		{
-			if (T* t = dynamic_cast<T*>(&component))
+			throw std::invalid_argument("T must be a subclass of or be Type Component");
+			std::vector<T*> result;
+			result.push_back(nullptr);
+			return result;
+		}
+
+		std::vector<T*> result;
+		for (Component* component : components)
+		{
+			if (T* t = dynamic_cast<T*>(component))
 			{
-				result.push_back(*t);
+				result.push_back(t);
 			}
 		}
 		return result;
+	}
+
+	template<>
+	std::vector<Component*> GameObject::GetComponents()
+	{
+		return components;
 	}
 
 }

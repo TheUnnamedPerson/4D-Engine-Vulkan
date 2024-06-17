@@ -70,12 +70,6 @@
     <ClCompile Include="Include\Engine\Engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Include\Engine\Components.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Include\Engine\Components.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Include\Engine\Time.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -101,6 +95,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Include\Engine\Material.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Components.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Engine\Components.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -666,6 +666,40 @@ namespace Engine4D
 		this->scale = scale;
 	}
 
+	Mesh::Mesh()
+	{
+		this->shapes = std::vector<Shape*>();
+	}
+
+	Mesh::Mesh(std::vector<Shape*> shapes)
+	{
+		this->shapes = shapes;
+	}
+
+	Mesh::~Mesh()
+	{
+		for (int i = 0; i < this->shapes.size(); i++)
+		{
+			delete this->shapes[i];
+		}
+	}
+
+	void Mesh::AddShape(Shape* shape)
+	{
+		this->shapes.push_back(shape);
+	}
+
+	float Mesh::SDF(Vector4 point)
+	{
+		if (shapes.size() <= 0) throw "No Shapes in Mesh";
+		float result = shapes[0]->SDF(point);
+		for (int i = 1; i < shapes.size(); i++)
+		{
+			result = std::fmin(result, shapes[i]->SDF(point));
+		}
+		return result;
+	}
+
 	HyperSphere::HyperSphere() : Shape()
 	{
 		this->shapeType = 1;
@@ -686,10 +720,12 @@ namespace Engine4D
 
 	float HyperSphere::SDF(Vector4 point)
 	{
-		point /= scale;
-		float result = point.length() - radius;
+		Vector4 _point = Matrix::RotationMatrixDoubleEuler4D(rotation, rotationW) * point;
+		_point /= scale;
+		_point -= position;
+		float result = _point.length() - radius;
 		float sF = scale.maxValue();
-		return result / sF;
+		return result * sF;
 	}
 
 	Instruction HyperSphere::getInstruction()
@@ -721,11 +757,13 @@ namespace Engine4D
 
 	float Tesseract::SDF(Vector4 point)
 	{
-		point /= scale;
-		Vector4 q = point.abs() - size;
+		Vector4 _point = Matrix::RotationMatrixDoubleEuler4D(rotation, rotationW) * point;
+		_point /= scale;
+		_point -= position;
+		Vector4 q = _point.abs() - size;
 		float result = std::fmin(std::fmax(q.x, std::fmax(q.y, std::fmax(q.z, q.w))), 0.) + max(q, Vector4(0)).length();
 		float sF = scale.maxValue();
-		return result / sF;
+		return result * sF;
 	}
 
 	Instruction Tesseract::getInstruction()
@@ -763,10 +801,12 @@ namespace Engine4D
 
 	float HyperPlane::SDF(Vector4 point)
 	{
-		point /= scale;
-		float result = dot(point, normal) - position.y;
+		Vector4 _point = Matrix::RotationMatrixDoubleEuler4D(rotation, rotationW) * point;
+		_point /= scale;
+		_point -= position;
+		float result = dot(_point, normal) - position.y;
 		float sF = scale.maxValue();
-		return result / sF;
+		return result * sF;
 	}
 
 	Instruction HyperPlane::getInstruction()

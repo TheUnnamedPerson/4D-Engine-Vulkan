@@ -3,6 +3,8 @@ module;
 #include <iostream>
 #include <glm/glm.hpp>
 
+#include <vector>
+
 export module Engine4D.Primitives;
 
 import Engine4D.Structs;
@@ -10,6 +12,8 @@ import Engine4D.Structs;
 namespace Engine4D {
 
 	export constexpr float PI = 3.14159265359f;
+	export constexpr float epsilon = 0.000001f;
+	export constexpr float epsilon_squared = epsilon * epsilon;
 
 	export class Matrix;
 
@@ -489,6 +493,22 @@ namespace Engine4D {
 		virtual Instruction getInstruction() = 0;
 
 		virtual float SDF(Vector4 point) = 0;
+	};
+
+	export class Mesh
+	{
+		public:
+		std::vector<Shape*> shapes;
+
+		Mesh();
+		Mesh(std::vector<Shape> shapes);
+		Mesh(std::vector<Shape*> shapes);
+
+		~Mesh();
+
+		void AddShape(Shape* shape);
+
+		float SDF(Vector4 point);
 	};
 
 	export class HyperSphere : public Shape
