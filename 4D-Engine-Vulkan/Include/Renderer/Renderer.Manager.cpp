@@ -201,7 +201,8 @@ namespace Engine4D {
 
                     std::cout << "FPS: " << 1.0 / timeSinceLastFrame << std::endl;
 
-                    /*std::cout << "Instructions: " << *instructionCount << std::endl;
+                    /*
+                    std::cout << "Instructions: " << *instructionCount << std::endl;
 
                     for (int i = 0; i < *instructionCount; i++)
                     {
@@ -209,7 +210,8 @@ namespace Engine4D {
                         std::cout << "\tValue A: " << Engine4D::Matrix((*instructions)[i].valueA) << std::endl;
                         std::cout << "\tValue B: " << Engine4D::Vector4((*instructions)[i].floatB, (*instructions)[i].floatC, (*instructions)[i].floatD, (*instructions)[i].valueE) << std::endl;
                         std::cout << "\tValue B.w: " << (*instructions)[i].valueE << std::endl;
-                    }*/
+                    }
+                    */
 
                     Time->deltaTime = deltaTime;
                     cameraControls();

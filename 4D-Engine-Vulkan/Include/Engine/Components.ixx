@@ -2,6 +2,7 @@ module;
 
 #include <vector>
 #include <string>
+#include <unordered_set>
 
 export module Engine4D.Components;
 
@@ -36,19 +37,30 @@ namespace Engine4D
 		public:
 		Vector4 gravity;
 		Vector4 velocity;
+		Vector4 acceleration;
+
 		Vector3 rotationalVelocity;
 		Vector3 rotationalVelocityW;
 
+		std::unordered_set<RigidBody*> collisionsHandled;
+
+		int objectType = 0; //0 = static, 1 = dynamic, 2 = kinematic
+
 		float mass;
+
+		float elasticity;
 
 		float countdowntime = 0.0f;
 
 		RigidBody() = delete;
 		RigidBody(GameObject* gameObject);
 
+		void addForce(Vector4 force); // Newton's second law
+
 		void Update() override;
 
 		void OnCollisionEnter(Collision collision) override;
+		void OnCollisionStay(Collision collision) override;
 		void OnCollisionExit(Collision collision) override;
 
 		std::string toString() override;

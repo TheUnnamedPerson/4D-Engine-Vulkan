@@ -28,6 +28,14 @@ namespace Engine4D
 		this->gameObject->engine->AddUpdateComponent(this);
 	}
 
+	Component::Component(GameObject* gameObject, int _id)
+	{
+		this->id = _id;
+		this->gameObject = gameObject;
+		this->transform = &(gameObject->transform);
+		this->gameObject->engine->AddUpdateComponent(this);
+	}
+
 	Component::~Component()
 	{
 		gameObject->engine->RemoveUpdateComponent(this);
@@ -182,15 +190,21 @@ namespace Engine4D
 
 	}
 
-	Collider::Collider(GameObject* gameObject) : MonoBehavior(gameObject)
+	MonoBehavior::MonoBehavior(GameObject* gameObject, int _id) : Component(gameObject, _id)
 	{
-		this->id = 2;
-		this->AddShape(new Tesseract());
+
 	}
 
-	Collider::Collider(GameObject* gameObject, Mesh colliderMesh) : MonoBehavior(gameObject)
+	Collider::Collider(GameObject* gameObject) : MonoBehavior(gameObject, 2)
 	{
+		this->AddShape(new Tesseract());
+		this->name = "Collider";
+	}
 
+	Collider::Collider(GameObject* gameObject, Mesh colliderMesh) : MonoBehavior(gameObject, 2)
+	{
+		this->colliderMesh = colliderMesh;
+		this->name = "Collider";
 	}
 
 	float Collider::SDF(Vector4 point)
@@ -228,42 +242,72 @@ namespace Engine4D
 		return result * transform->scale.length() * 1.05f;
 	}
 
+	Vector4 Collider::FindNormal(Collider* other, Vector4 reference)
+	{
+		Vector4 result = Vector4(0);
+
+		float distance = std::fmaxf(this->SDF(reference), other->SDF(reference));
+
+		float distanceX = std::fmaxf(this->SDF(reference - Vector4(epsilon, 0, 0, 0)), other->SDF(reference - Vector4(epsilon, 0, 0, 0)));
+
+		float distanceY = std::fmaxf(this->SDF(reference - Vector4(0, epsilon, 0, 0)), other->SDF(reference - Vector4(0, epsilon, 0, 0)));
+
+		float distanceZ = std::fmaxf(this->SDF(reference - Vector4(0, 0, epsilon, 0)), other->SDF(reference - Vector4(0, 0, epsilon, 0)));
+
+		float distanceW = std::fmaxf(this->SDF(reference - Vector4(0, 0, 0, epsilon)), other->SDF(reference - Vector4(0, 0, 0, epsilon)));
+
+		//std::cout << "Distances: " << Vector4(distanceX, distanceY, distanceZ, distanceW) << std::endl;
+		//std::cout << "Distance: " << distance << std::endl;
+		result.x = (distance - distanceX);
+		result.y = (distance - distanceY);
+		result.z = (distance - distanceZ);
+		result.w = (distance - distanceW);
+
+		//std::cout << "result: " << result << std::endl;
+
+		if (result.length() == 0)
+		{
+			return Vector4(0, 1, 0, 0);
+		}
+
+		result = result.normalized();
+
+		//std::cout << "result: " << result << std::endl;
+
+		return result;
+	}
+	
 	void Collider::CheckCollision(Collider* other)
 	{
-		//std::cout << "Checking Collision! - " << this->gameObject->name << " ; " << other->gameObject->name << std::endl;
+		bool debug_log = false;
+		if (coll_debug_countdown > 120 && gameObject->name != "Floor" && other->gameObject->name != "Floor") debug_log = true;
+		if (debug_log) std::cout << "Checking Collision! - " << this->gameObject->name << " ; " << other->gameObject->name << std::endl;
 		Vector4 referenceA = transform->position;
-		//referenceA = Matrix::RotationMatrixDoubleEuler4D(transform->rotation * -1, transform->rotationW * -1) * referenceA;
-		//referenceA = referenceA / transform->scale;
-
+		
 		Vector4 referenceB = other->transform->position;
-		//referenceB = Matrix::RotationMatrixDoubleEuler4D(other->transform->rotation * -1, other->transform->rotationW * -1) * referenceB;
-		//referenceB = referenceB / other->transform->scale;
-
-		//std::cout << "other Transform: " << other->transform->position << " ; " << other->transform->rotation << " ; " << other->transform->rotationW << " ; " << other->transform->scale << std::endl;
-		//std::cout << "rotation Matrix: " << Matrix::RotationMatrixDoubleEuler4D(other->transform->rotation * -1, other->transform->rotationW * -1) << std::endl;
-
+		
 		bool resultA = false;
 		bool resultB = false;
 
 		Vector4 normalA;
 		Vector4 normalB;
 
-		//std::cout << "Starting RayMarch! Reference A ; Reference B - " << referenceA << " ; " << referenceB << std::endl;
-		//std::cout << "SDFA = " << colliderMesh.SDF(referenceA) << " ; " << other->colliderMesh.SDF(referenceA) << std::endl;
-		//std::cout << "SDFB = " << colliderMesh.SDF(referenceB) << " ; " << other->colliderMesh.SDF(referenceB) << std::endl;
+		if (debug_log) std::cout << "Starting RayMarch! Reference A ; Reference B - " << referenceA << " ; " << referenceB << std::endl;
+		if (debug_log) std::cout << "SDFA = " << colliderMesh.SDF(referenceA) << " ; " << other->colliderMesh.SDF(referenceA) << std::endl;
+		if (debug_log) std::cout << "SDFB = " << colliderMesh.SDF(referenceB) << " ; " << other->colliderMesh.SDF(referenceB) << std::endl;
 
 		for (int i = 0; i < 10; i++)
 		{
 			Vector4 raymarchedA = CollisionMarch(other, referenceA) * transform->scale.length();
 			referenceA -= raymarchedA;
 
-			//std::cout << "Raymarching Collider A. i = " << i << " ; ReferenceA = " << referenceA << " ; rayMarchedA" << raymarchedA << std::endl;
+			if (debug_log) std::cout << "Raymarching Collider A. i = " << i << " ; ReferenceA = " << referenceA << " ; rayMarchedA" << raymarchedA << std::endl;
 
-			//std::cout << "SDF = " << colliderMesh.SDF(referenceA) << std::endl;
+			if (debug_log) std::cout << "SDF = " << colliderMesh.SDF(referenceA) << std::endl;
 
 			if (colliderMesh.SDF(referenceA) < 0)
 			{
-				normalA = (raymarchedA * -1).normalized();
+				normalA = FindNormal(other, referenceA);
 				resultA = true;
 				break;
 			}
@@ -273,13 +317,13 @@ namespace Engine4D
 			Vector4 raymarchedB = other->CollisionMarch(this, referenceB) * other->transform->scale.length();
 			referenceB -= raymarchedB;
 
-			//std::cout << "Raymarching Collider B. i = " << i << " ; ReferenceB = " << referenceB << " ; rayMarchedB" << raymarchedB << std::endl;
+			if (debug_log) std::cout << "Raymarching Collider B. i = " << i << " ; ReferenceB = " << referenceB << " ; rayMarchedB" << raymarchedB << std::endl;
 
-			//std::cout << "SDF = " << other->colliderMesh.SDF(referenceB) << std::endl;
+			if (debug_log) std::cout << "SDF = " << other->colliderMesh.SDF(referenceB) << std::endl;
 
 			if (other->colliderMesh.SDF(referenceB) < 0)
 			{
-				normalB = (raymarchedB * -1).normalized();
+				normalB = other->FindNormal(this, referenceB);
 				resultB = true;
 				break;
 			}
@@ -318,7 +362,8 @@ namespace Engine4D
 			{
 				collisions[other] = collision;
 				other->collisions[this] = collision;
-				//TriggerCollisionStays(collision);
+				TriggerCollisionStays(collision);
+				other->TriggerCollisionStays(collision);
 			}
 			else
 			{
@@ -330,17 +375,28 @@ namespace Engine4D
 				//std::cout << "else - count(this) - " << other->collisions.count(this) << std::endl;
 			}
 		}
+		if (debug_log) coll_debug_countdown++;
 		//std::cout << "count(other) - " << collisions.count(other) << std::endl;
 		//std::cout << "count(this) - " << other->collisions.count(this) << std::endl;
 	}
 
 	void Collider::TriggerCollisionEnters(Collision collision)
 	{
-		//std::cout << "Triggering Collision Enters!: " << gameObject->name << std::endl;
+		std::cout << "Triggering Collision Enters!: " << collision.collider1->gameObject->name << " ; " << collision.collider2->gameObject->name << std::endl;
 		std::vector<MonoBehavior*> components = gameObject->GetComponents<MonoBehavior>();
 		for (int i = 0; i < components.size(); i++)
 		{
 			components[i]->OnCollisionEnter(collision);
+		}
+	}
+
+	void Collider::TriggerCollisionStays(Collision collision)
+	{
+		//std::cout << "Triggering Collision Enters!: " << gameObject->name << std::endl;
+		std::vector<MonoBehavior*> components = gameObject->GetComponents<MonoBehavior>();
+		for (int i = 0; i < components.size(); i++)
+		{
+			components[i]->OnCollisionStay(collision);
 		}
 	}
 
@@ -493,6 +549,7 @@ namespace Engine4D
 					Collider* collider2 = dynamic_cast<Collider*>(updateComponents[2][j]);
 					if (collider2 != nullptr)
 					{
+						//std::cout << "Checking Collision! - " << collider->gameObject->name << " ; " << collider2->gameObject->name << std::endl;
 						collider->CheckCollision(collider2);
 					}
 				}
@@ -502,19 +559,20 @@ namespace Engine4D
 
 	void Engine::Update()
 	{
-		UpdateCollisions();
+		
 
 		int stateH = glfwGetKey(renderer->window.getWindow(), GLFW_KEY_H);
 		if (stateH == GLFW_PRESS && !pushedH)
 		{
+			std::cout << "PRESSED H: " << stateH << std::endl;
 			pushedH = true;
 			Engine4D::GameObject* cube = root->AddChild();
 
-			cube->name = "Tesseract";
+			cube->name = "Tesseract " + std::to_string(gameObjects.size() - 2);
 
 			std::cout << cube->transform.toString() << std::endl;
 
-				Engine4D::MeshRenderer* CubeRend = cube->AddComponent<Engine4D::MeshRenderer>();
+			Engine4D::MeshRenderer* CubeRend = cube->AddComponent<Engine4D::MeshRenderer>();
 			CubeRend->AddShape(new Engine4D::Tesseract());
 			CubeRend->material = materials[2];
 
@@ -525,17 +583,30 @@ namespace Engine4D
 			//rend->material->color = Engine4D::Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 			//rend->material->index = 2;
 
-			CubeRend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
-
+			CubeRend->transform->position = Engine4D::Vector4(1.0f, 5.0f, 1.0f, 0.0f);
+			/*
 			Engine4D::RigidBody* rb = cube->AddComponent<Engine4D::RigidBody>();
-			rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
-			rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);
+			rb->mass = 1.0f;
+			rb->elasticity = -0.05f;
+			rb->objectType = 1;
+			*/
+
+			Engine4D::Collider* cubeCol = cube->AddComponent<Engine4D::Collider>();
+			cubeCol->AddShape(new Engine4D::Tesseract());
+
+			//UpdateAllComponents();
+			std::cout << "Spawned Cube." << std::endl;
+			//rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
+			//rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);//*/
 		}
 		else if (stateH == GLFW_RELEASE)
 		{
+			if (pushedH) std::cout << "RELEASED H: " << stateH << std::endl;
 			pushedH = false;
 		}
+
 		root->Update();
+		UpdateCollisions();
 	}
 
 	void Engine::FixedUpdate()

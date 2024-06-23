@@ -98,6 +98,12 @@ namespace Engine4D {
 			T* GetComponent();
 
 			template<typename T>
+			bool TryGetComponent();
+
+			template<typename T>
+			bool TryGetComponent(T*& outputPointer);
+
+			template<typename T>
 			std::vector<T*> GetComponents();
 
 		protected:
@@ -125,6 +131,7 @@ namespace Engine4D {
 
 		Component() = delete;
 		Component(GameObject* gameObject);
+		Component(GameObject* gameObject, int _id);
 
 		~Component();
 
@@ -145,13 +152,14 @@ namespace Engine4D {
 			virtual void LateUpdate() {}
 
 			virtual void OnCollisionEnter(Collision collision);
-			//virtual void OnCollisionStay(Collision collision);
+			virtual void OnCollisionStay(Collision collision);
 			virtual void OnCollisionExit(Collision collision);
 
 			virtual void OnInitialization() {}
 
 			MonoBehavior() = delete;
 			MonoBehavior(GameObject* gameObject);
+			MonoBehavior(GameObject* gameObject, int _id);
 			
 			//std::vector<std::type_identity_t> RequiredComponents;
 		
@@ -172,9 +180,13 @@ namespace Engine4D {
 
 		float SDF(Vector4 point);
 
+		int coll_debug_countdown = 0;
+
 		Vector4 CollisionMarch(Collider* other, Vector4 reference);
+		Vector4 FindNormal(Collider* other, Vector4 reference);
 		void CheckCollision(Collider* other);
 		void TriggerCollisionEnters(Collision collision);
+		void TriggerCollisionStays(Collision collision);
 		void TriggerCollisionExits(Collision collision);
 
 		std::string toString() override;
@@ -275,7 +287,7 @@ namespace Engine4D {
 	};
 
 	void MonoBehavior::OnCollisionEnter(Collision collision) {}
-	//virtual void MonoBehavior::OnCollisionStay(Collision collision) {}
+	void MonoBehavior::OnCollisionStay(Collision collision) {}
 	void MonoBehavior::OnCollisionExit(Collision collision) {}
 
 	template<typename T>
@@ -301,13 +313,51 @@ namespace Engine4D {
 			throw std::invalid_argument("T must be a subclass of or be Type Component");
 			return nullptr;
 		}
-		for (Component component : components)
+		for (Component* component : components)
 		{
-			if (T* t = dynamic_cast<T*>(&component))
+			if (T* t = dynamic_cast<T*>(component))
 			{
 				return t;
 			}
 		}
+		throw std::invalid_argument("Component not found");
+	}
+
+	template<typename T>
+	bool GameObject::TryGetComponent()
+	{
+		if (!std::is_base_of<Component, T>::value)
+		{
+			return false;
+		}
+		for (Component* component : components)
+		{
+			if (T* t = dynamic_cast<T*>(component))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	template<typename T>
+	bool GameObject::TryGetComponent(T*& outputPointer)
+	{
+		if (!std::is_base_of<Component, T>::value)
+		{
+			outputPointer = nullptr;
+			return false;
+		}
+		for (Component* component : components)
+		{
+			if (T* t = dynamic_cast<T*>(component))
+			{
+				outputPointer = t;
+				return true;
+			}
+		}
+		outputPointer = nullptr;
+		return false;
 	}
 
 	template<>

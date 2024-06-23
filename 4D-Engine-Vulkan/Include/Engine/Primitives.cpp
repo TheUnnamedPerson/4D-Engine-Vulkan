@@ -27,6 +27,7 @@ namespace Engine4D
 
 	Vector2 Vector2::normalized()
 	{
+		if (length() == 0) throw "Cannot Normalize Vector4 with Length of 0";
 		return *this / length();
 	}
 
@@ -126,6 +127,14 @@ namespace Engine4D
 		return *this;
 	}
 
+	/*bool Vector2::operator==(const Vector2& other)
+	{
+		bool result = true;
+		if (x != other.x) result = false;
+		if (y != other.y) result = false;
+		return result;
+	}*/
+
 	std::ostream& operator<<(std::ostream& os, const Vector2& vec)
 	{
 		os << "(" << vec.x << ", " << vec.y << ")";
@@ -179,6 +188,7 @@ namespace Engine4D
 
 	Vector3 Vector3::normalized()
 	{
+		if (length() == 0) throw "Cannot Normalize Vector4 with Length of 0";
 		return *this / length();
 	}
 
@@ -301,6 +311,15 @@ namespace Engine4D
 		return *this;
 	}
 
+	/*bool Vector3::operator==(const Vector3& other)
+	{
+		bool result = true;
+		if (x != other.x) result = false;
+		if (y != other.y) result = false;
+		if (z != other.z) result = false;
+		return result;
+	}*/
+
 	std::ostream& operator<<(std::ostream& os, const Vector3& vec)
 	{
 		os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
@@ -366,6 +385,7 @@ namespace Engine4D
 
 	Vector4 Vector4::normalized()
 	{
+		if (length () == 0) throw "Cannot Normalize Vector4 with Length of 0";
 		return *this / length();
 	}
 

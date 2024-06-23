@@ -49,7 +49,11 @@ namespace Engine4D {
 		Vector2 operator*=(const float& other);
 		Vector2 operator/=(const float& other);
 
+		//bool operator==(const Vector2& other);
+
 		friend std::ostream& operator<<(std::ostream& os, const Vector2& vec);
+
+		explicit operator glm::vec2() const { return glm::vec2(x, y); }
 	};
 
 	export Vector2 max(Vector2 a, Vector2 b);
@@ -65,6 +69,7 @@ namespace Engine4D {
 		public:
 		float x, y, z;
 		Vector3();
+		Vector3(glm::vec3 vec);
 		Vector3(float x, float y, float z);
 		Vector3(Vector2 xy, float z);
 		Vector3(float x, Vector2 yz);
@@ -98,7 +103,11 @@ namespace Engine4D {
 		Vector3 operator*=(const float& other);
 		Vector3 operator/=(const float& other);
 
+		//bool operator==(const Vector3& other);
+
 		friend std::ostream& operator<<(std::ostream& os, const Vector3& vec);
+
+		explicit operator glm::vec3() const { return glm::vec3(x, y, z); }
 	};
 
 	export Vector3 max(Vector3 a, Vector3 b);
@@ -162,6 +171,8 @@ namespace Engine4D {
 		Vector4 operator-=(const float& other);
 		Vector4 operator*=(const float& other);
 		Vector4 operator/=(const float& other);
+
+		//friend bool operator==(const Vector4& base, const Vector4& other);
 
 		Vector4 operator*(const Matrix& other) const;
 
@@ -425,17 +436,7 @@ namespace Engine4D {
 			return RotationMatrix(RotationMatrix::XW, EulerAngles.x) * RotationMatrix(RotationMatrix::YW, EulerAngles.y) * RotationMatrix(RotationMatrix::ZW, EulerAngles.z) * RotationMatrix(RotationMatrix::XY, EulerAngles.w);
 		}
 
-		static Matrix RotationMatrixDoubleEuler4D(Vector3 RotationAngles, Vector3 RotationAnglesW)
-		{
-			Matrix xwMatrix = RotationMatrix(RotationMatrix::XW, RotationAngles.x);
-			Matrix ywMatrix = RotationMatrix(RotationMatrix::YW, RotationAngles.y);
-			Matrix zwMatrix = RotationMatrix(RotationMatrix::ZW, RotationAngles.z);
-			Matrix xyMatrix = RotationMatrix(RotationMatrix::XY, RotationAnglesW.x);
-			Matrix xzMatrix = RotationMatrix(RotationMatrix::XZ, RotationAnglesW.y);
-			Matrix yzMatrix = RotationMatrix(RotationMatrix::YZ, RotationAnglesW.z);
-
-			return xwMatrix * ywMatrix * zwMatrix * xyMatrix * xzMatrix * yzMatrix;
-		}
+		static Matrix RotationMatrixDoubleEuler4D(Vector3 RotationAngles, Vector3 RotationAnglesW);
 
 		Vector4 operator*(const Vector4& other) const;
 		Matrix operator*(const Matrix& other) const;
@@ -553,5 +554,88 @@ namespace Engine4D {
 
 		float SDF(Vector4 point) override;
 	};
+
+}
+
+namespace Engine4D
+{
+	/*export inline Vector2 operator+(const float& base, const Vector2& other)
+	{
+		Vector2 result = other;
+		result += base;
+		return result;
+	}*/
+	export inline Vector2 operator-(const Vector2& other)
+	{
+		Vector2 result = other;
+		result *= -1;
+		return result;
+	}
+	/*export inline Vector2 operator*(const float& base, const Vector2& other)
+	{
+		Vector2 result = other;
+		result *= base;
+		return result;
+	}*/
+
+	/*export inline Vector3 operator+(const float& base, const Vector3& other)
+	{
+		Vector3 result = other;
+		result += base;
+		return result;
+	}*/
+	export inline Vector3 operator-(const Vector3& other)
+	{
+		Vector3 result = other;
+		result *= -1;
+		return result;
+	}
+	/*export inline Vector3 operator*(const float& base, const Vector3& other)
+	{
+		Vector3 result = other;
+		result *= base;
+		return result;
+	}*/
+
+	/*export inline Vector4 operator+(const float& base, const Vector4& other)
+	{
+		Vector4 result = other;
+		result += base;
+		return result;
+	}*/
+	export inline Vector4 operator-(const Vector4& other)
+	{
+		Vector4 result = other;
+		result *= -1;
+		return result;
+	}
+
+	export bool operator==(const Vector4& base, const Vector4& other)
+	{
+		bool result = true;
+		if (base.x != other.x) result = false;
+		if (base.y != other.y) result = false;
+		if (base.z != other.z) result = false;
+		if (base.w != other.w) result = false;
+		return result;
+	}
+	/*export inline Vector4 operator*(const float& base, const Vector4& other)
+	{
+		Vector4 result = other;
+		result *= base;
+		return result;
+	}*/
+
+	Matrix Matrix::RotationMatrixDoubleEuler4D(Vector3 RotationAngles, Vector3 RotationAnglesW)
+	{
+		Matrix xwMatrix = RotationMatrix(RotationMatrix::XW, RotationAngles.x);
+		Matrix ywMatrix = RotationMatrix(RotationMatrix::YW, RotationAngles.y);
+		Matrix zwMatrix = RotationMatrix(RotationMatrix::ZW, RotationAngles.z);
+		Matrix xyMatrix = RotationMatrix(RotationMatrix::XY, RotationAnglesW.x);
+		Matrix xzMatrix = RotationMatrix(RotationMatrix::XZ, RotationAnglesW.y);
+		Matrix yzMatrix = RotationMatrix(RotationMatrix::YZ, RotationAnglesW.z);
+
+		return xwMatrix * ywMatrix * zwMatrix * xyMatrix * xzMatrix * yzMatrix;
+	}
 
 }

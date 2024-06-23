@@ -95,7 +95,7 @@ int main() {
 
 		Engine4D::MeshRenderer* FloorRend = floor->AddComponent<Engine4D::MeshRenderer>();
 
-		Engine4D::Shape* floorColShape = new Engine4D::Tesseract(Engine4D::Vector4(0), Engine4D::Vector3(0), Engine4D::Vector3(0), Engine4D::Vector4(10.0f, .5f, 10.0f, 10.0f));
+		Engine4D::Shape* floorColShape = new Engine4D::Tesseract(Engine4D::Vector4(-0.25), Engine4D::Vector3(0), Engine4D::Vector3(0), Engine4D::Vector4(100.0f, .5f, 100.0f, 100.0f));
 
 		FloorRend->AddShape(new Engine4D::HyperPlane());
 		//FloorRend->AddShape(floorColShape);
@@ -117,7 +117,7 @@ int main() {
 
 		cube->name = "Tesseract";
 
-        std::cout << cube->transform.toString() << std::endl;\
+        std::cout << cube->transform.toString() << std::endl;
 
 		Engine4D::MeshRenderer* CubeRend = cube->AddComponent<Engine4D::MeshRenderer>();
 		CubeRend->AddShape(new Engine4D::Tesseract());
@@ -133,9 +133,14 @@ int main() {
 
 		CubeRend->transform->position = Engine4D::Vector4(1.0f, 1.0f, 1.0f, 0.0f);
 
-        Engine4D::RigidBody* rb = cube->AddComponent<Engine4D::RigidBody>();
-        rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
-        rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);
+        ///*
+		Engine4D::RigidBody* rb = cube->AddComponent<Engine4D::RigidBody>();
+		rb->mass = 1.0f;
+		rb->elasticity = -0.1f;
+		rb->objectType = 1;
+        //rb->rotationalVelocity = Engine4D::Vector3(0.75f, 0.0f, 0.0f);
+        //rb->rotationalVelocityW = Engine4D::Vector3(0.0f, 0.0f, 1.0f);
+		//*/
 
 		Engine4D::Collider* cubeCol = cube->AddComponent<Engine4D::Collider>();
 		cubeCol->AddShape(new Engine4D::Tesseract());
